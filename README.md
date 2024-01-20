@@ -5,3 +5,4 @@ Tämä ohjelma on toteutettu osana Helsingin yliopiston tietojenkäsittelytietee
 ## Dokumentaatio
 
 - [Määrittelydokumentti](./dokumentaatio/maarittelydokumentti.md)
+- [Viikkoraportit](./dokumentaatio/viikkoraportit/)
