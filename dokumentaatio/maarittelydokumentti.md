@@ -22,7 +22,7 @@ Vaihtoehtoisena toteutuskielenä pohdin TypeScriptia, jos olisin päätynyt teke
 
 ## Algoritmit ja tietorakenteet
 
-**Minimax ja Alfa-beta karsinta**
+### Minimax ja Alfa-beta karsinta
 
 Minimax-algoritmi soveltuu loistavasti kahden pelaajan 1v1 peliin kuten Connect Four. Harjoitustyön tavoitteena on kehittäjää tekoälyvastustaja, joka valitsee mahdollisimman hyvin seuraavan siirtonsa. On pelaajalle mielekästä, jos tekoälyvastustajaa vastaan pelatessa on haastetta.
 
