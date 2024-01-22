@@ -36,7 +36,7 @@ Alpha-beta karsinta pyrkii vähentämään läpikäytävien haarojen määrää,
 
 Yleisin käytetty Connect Four -lauta on kooltaan **6 x 7** ja jos molemmat pelaajat pelaavat optimaalisesti on pelipuun syvyys 42 (6 riviä x 7 saraketta). Käytännössä kuitenkin pelipuun syvyys on vähemmän aikaisessa vaiheessa tapahtuneiden voittojen sekä pakotettujen siirtojen takia.
 
-Minimax-algoritmi alpha-beta karsinnalla tehostettuna ei vaadi koko pelikuun tallentamista muistiin, mutta se vaatii pinon käyttämistä, jotta rekursiivisten funktiokutsujen seuraaminen on mahdollista. Pinon tilavaativuus riippuu pelipuun syvyydestä. Pahimmassa tapauksessa (syvyys 42), pinon tilavaativuus on O(42) tai yksinkertaistettuna O(1), koska maksimisyvyys on vakio.
+Minimax-algoritmi alpha-beta karsinnalla tehostettuna ei vaadi koko pelipuun tallentamista muistiin, mutta se vaatii pinon käyttämistä, jotta rekursiivisten funktiokutsujen seuraaminen on mahdollista. Pinon tilavaativuus riippuu pelipuun syvyydestä. Pahimmassa tapauksessa (syvyys 42), pinon tilavaativuus on O(42) tai yksinkertaistettuna O(1), koska maksimisyvyys on vakio.
 
 ## Ohjelman syötteet
 
