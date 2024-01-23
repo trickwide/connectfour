@@ -12,7 +12,7 @@ class Player:
         Initialize a player with the given id.
 
         Args:
-            id (int): The id of the player (0 for red, 1 for yellow).
+            id (int): The id of the player (1 for red, 2 for yellow).
         """
         self._id = player_id
 
@@ -21,7 +21,7 @@ class Player:
         Get the ID of the player.
 
         Returns:
-            int: The ID of the player (0 for red, 1 for yellow).
+            int: The ID of the player (1 for red, 2 for yellow).
         """
         return self._id
 
@@ -32,7 +32,7 @@ class Player:
         Returns:
             tuple: A tuple representing the RGB color code (0-255) for the player's chip.
         """
-        if self._id == 0:
+        if self._id == 1:
             return (255, 0, 0)
         return (255, 255, 0)
 
@@ -41,8 +41,8 @@ class Player:
         Get the name of the player.
 
         Returns:
-            str: The name of the player ("Player (Red)" for id 0, "AI (Yellow)" for id 1).
+            str: The name of the player ("Player (Red)" for id 1, "AI (Yellow)" for id 2).
         """
-        if self._id == 0:
+        if self._id == 1:
             return "Player (Red)"
         return "AI (Yellow)"
