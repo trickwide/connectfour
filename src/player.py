@@ -2,6 +2,7 @@
 Connect Four Player Module
 """
 
+
 class Player:
     """
     Represents a player in the Connect Four game.
@@ -12,16 +13,16 @@ class Player:
         Initialize a player with the given id.
 
         Args:
-            id (int): The id of the player (1 for red, 2 for yellow).
+            player_id (int): The id of the player (1 for red, 2 for yellow).
         """
         self._id = player_id
 
     def get_id(self):
         """
-        Get the ID of the player.
+        Get the id of the player.
 
         Returns:
-            int: The ID of the player (1 for red, 2 for yellow).
+            int: The id of the player (1 for red, 2 for yellow).
         """
         return self._id
 
