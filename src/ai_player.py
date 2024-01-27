@@ -16,6 +16,7 @@ class AIPlayer(Player):
     Args:
         Player (class): The parent class of the AIPlayer class. 
     """
+
     def get_best_move(self, board):
         """
         Determine the best move to make for the AI player on the given game board.
