@@ -21,10 +21,12 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Run tests
-        run: poetry run invoke test
+        run: poetry run coverage run --branch -m pytest
       - name: Coverage report
-        run: poetry run invoke report
+        run: poetry run coverage xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Run lint
+        run: poetry run pylint src
