@@ -8,6 +8,7 @@ authors = ["Ville Saastamoinen"]
 python = "^3.10"
 pygame = "^2.5.2"
 numpy = "^1.26.3"
+invoke = "^2.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
