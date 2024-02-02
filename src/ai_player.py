@@ -36,7 +36,7 @@ class AIPlayer(Player):
         for column in valid_moves:
             row = board.get_next_empty_row(column)
             board.drop_chip(column, self.get_id())
-            score = self.minimax(board, 5, -float("inf"), float("inf"), False)
+            score = self.minimax(board, 5, best_score, float("inf"), False)
             board.board[row][column] = 0
 
             if score > best_score:
