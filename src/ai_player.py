@@ -16,8 +16,11 @@ class AIPlayer(Player):
     Args:
         Player (class): The parent class of the AIPlayer class. 
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cache = {}
 
-    def get_best_move(self, board):
+    def get_best_move(self, board, max_depth=42):
         """
         Determine the best move to make for the AI player on the given game board.
 
@@ -34,17 +37,18 @@ class AIPlayer(Player):
         best_move = None
         best_score = float("-inf")
 
-        for column in valid_moves:
-            row = board.get_next_empty_row(column)
-            board.drop_chip(column, self.get_id())
-            score = self.minimax(board, 5, best_score, float("inf"), False)
-            board.board[row][column] = 0
+        for depth in range(1, max_depth+1):
+            for column in valid_moves:
+                row = board.get_next_empty_row(column)
+                board.drop_chip(column, self.get_id())
+                score = self.minimax(board, depth, best_score, float("inf"), True)
+                board.board[row][column] = 0
 
-            if score > best_score:
-                best_score = score
-                best_move = column
+                if score > best_score:
+                    best_score = score
+                    best_move = column
 
-        return best_move
+            return best_move
 
     def evaluate_window(self, window, player_id):
         """
@@ -143,6 +147,10 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
+        cache_key = (str(board.board), depth, maxplayer)
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+        
         if depth == 0 or board.is_game_over():
             if board.is_winner(self.get_id()):
                 return 100000
@@ -164,6 +172,7 @@ class AIPlayer(Player):
                 alpha = max(alpha, evaluation)
                 if beta <= alpha:
                     break
+            self.cache[cache_key] = max_evaluation
             return max_evaluation
 
         min_evaluation = float("inf")
@@ -176,4 +185,5 @@ class AIPlayer(Player):
             beta = min(beta, evaluation)
             if beta <= alpha:
                 break
+        self.cache[cache_key] = min_evaluation
         return min_evaluation
