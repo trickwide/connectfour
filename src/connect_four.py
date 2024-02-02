@@ -96,7 +96,7 @@ while running:
                message_color, game_font)
 
     if game_over:
-        pygame.time.delay(5000)  # Show the game over message for 5 seconds
+        pygame.time.delay(3000)  # Show the game over message for 3 seconds
         reset_game()  # Reset the game
 
 pygame.quit()
