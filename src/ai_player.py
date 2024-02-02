@@ -98,19 +98,22 @@ class AIPlayer(Player):
         if ai_count == 3 and empty_count == 1:
             score += 100
         elif opponent_count == 3 and empty_count == 1:
-            score -= 90
+            score -= 100
 
         # Promote center control
         if ai_count == 2 and empty_count == 2 and window[2] == player_id:
-            score += 10
+            score += 15
 
-        # Penalize vulnerable positions
-        if ai_count == 2 and empty_count == 2 and window[2] == opponent_id:
-            score -= 20
-
-        # Encourage building open rows
-        if ai_count == 1 and empty_count == 3:
+        # Slight reward for potential winning move
+        if ai_count == 2 and empty_count == 2:
             score += 5
+        if opponent_count == 2 and empty_count == 2:
+            score -= 10 # Penalize potential winning opportunity of opponent
+        
+        if ai_count == 1 and empty_count == 3:
+            score += 2 # Encourage building towards future opportunities
+        if opponent_count == 1 and empty_count == 3:
+            score -= 4 # Discourage AI to reflect the potential threat
 
         return score
 
