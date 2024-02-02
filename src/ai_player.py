@@ -28,8 +28,9 @@ class AIPlayer(Player):
             int: The column number representing the best move for the AI player to make.
                 This move is determined using the minimax algorithm with a depth of 5.
         """
-        valid_moves = [column for column in range(
-            COLUMN_COUNT) if board.is_valid_location(column)]
+        center_columns = [3, 2, 4, 1, 5, 0, 6]
+        valid_moves = [col for col in center_columns if board.is_valid_location(col)]
+
         best_move = None
         best_score = float("-inf")
 
