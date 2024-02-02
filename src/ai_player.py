@@ -16,6 +16,7 @@ class AIPlayer(Player):
     Args:
         Player (class): The parent class of the AIPlayer class. 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cache = {}
@@ -36,7 +37,8 @@ class AIPlayer(Player):
             return immediate_block_move
 
         center_columns = [3, 2, 4, 1, 5, 0, 6]
-        valid_moves = [col for col in center_columns if board.is_valid_location(col)]
+        valid_moves = [
+            col for col in center_columns if board.is_valid_location(col)]
 
         best_move = None
         best_score = float("-inf")
@@ -45,7 +47,8 @@ class AIPlayer(Player):
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, self.get_id())
-                score = self.minimax(board, depth, best_score, float("inf"), True)
+                score = self.minimax(
+                    board, depth, best_score, float("inf"), True)
                 board.board[row][column] = 0
 
                 if score > best_score:
@@ -60,9 +63,10 @@ class AIPlayer(Player):
 
         Args:
             board (Board): The game board representing the current game state.
-        
+
         Returns:
-            int: The column to block the opponent's winning move, if a threat is found. None otherwise.
+            int: The column to block the opponent's winning move, if a threat is found.
+            None otherwise.
         """
         for column in range(COLUMN_COUNT):
             if board.is_valid_location(column):
@@ -108,12 +112,12 @@ class AIPlayer(Player):
         if ai_count == 2 and empty_count == 2:
             score += 5
         if opponent_count == 2 and empty_count == 2:
-            score -= 10 # Penalize potential winning opportunity of opponent
-        
+            score -= 10  # Penalize potential winning opportunity of opponent
+
         if ai_count == 1 and empty_count == 3:
-            score += 2 # Encourage building towards future opportunities
+            score += 2  # Encourage building towards future opportunities
         if opponent_count == 1 and empty_count == 3:
-            score -= 4 # Discourage AI to reflect the potential threat
+            score -= 4  # Discourage AI to reflect the potential threat
 
         return score
 
@@ -177,7 +181,7 @@ class AIPlayer(Player):
         cache_key = (str(board.board), depth, maxplayer)
         if cache_key in self.cache:
             return self.cache[cache_key]
-        
+
         if depth == 0 or board.is_game_over():
             if board.is_winner(self.get_id()):
                 return 100000
