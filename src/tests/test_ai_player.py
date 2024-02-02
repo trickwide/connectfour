@@ -2,10 +2,12 @@ import unittest
 import numpy as np
 from src.ai_player import AIPlayer, ROW_COUNT, COLUMN_COUNT
 
+
 class MockBoard:
     """
     A mock version of the Board class to simulate game states.
     """
+
     def __init__(self):
         self.board = np.zeros((ROW_COUNT, COLUMN_COUNT), dtype=int)
 
@@ -71,4 +73,5 @@ class TestAIPlayer(unittest.TestCase):
         for _ in range(3):
             self.board.drop_chip(3, 1)  # Opponent's chip
         self.ai_player.find_immediate_threat(self.board)
-        self.assertEqual(self.ai_player.get_best_move(self.board), 3, "AI should block at column 3")
+        self.assertEqual(self.ai_player.get_best_move(
+            self.board), 3, "AI should block at column 3")
