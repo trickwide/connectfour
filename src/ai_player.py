@@ -31,6 +31,10 @@ class AIPlayer(Player):
             int: The column number representing the best move for the AI player to make.
                 This move is determined using the minimax algorithm with a depth of 5.
         """
+        immediate_block_move = self.find_immediate_threat(board)
+        if immediate_block_move is not None:
+            return immediate_block_move
+
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [col for col in center_columns if board.is_valid_location(col)]
 
@@ -49,6 +53,26 @@ class AIPlayer(Player):
                     best_move = column
 
             return best_move
+
+    def find_immediate_threat(self, board):
+        """
+        Check for an immediate threat where the opponent is one move away from winning.
+
+        Args:
+            board (Board): The game board representing the current game state.
+        
+        Returns:
+            int: The column to block the opponent's winning move, if a threat is found. None otherwise.
+        """
+        for column in range(COLUMN_COUNT):
+            if board.is_valid_location(column):
+                row = board.get_next_empty_row(column)
+                board.drop_chip(column, 1 if self.get_id() == 2 else 2)
+                if board.is_winner(1 if self.get_id() == 2 else 2):
+                    board.board[row][column] = 0
+                    return column
+                board.board[row][column] = 0
+        return None
 
     def evaluate_window(self, window, player_id):
         """
