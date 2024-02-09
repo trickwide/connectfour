@@ -21,7 +21,7 @@ class AIPlayer(Player):
         super().__init__(*args, **kwargs)
         self.cache = {}
 
-    def get_best_move(self, board, max_depth=42):
+    def get_best_move(self, board, max_depth=5):
         """
         Determine the best move to make for the AI player on the given game board.
 
