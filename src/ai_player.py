@@ -200,7 +200,7 @@ class AIPlayer(Player):
             for column in valid_moves:
                 board_copy = board.copy()
                 board_copy.drop_chip(column, self.get_id())
-                evaluation = self.minimax(board, depth-1, alpha, beta, False)
+                evaluation = self.minimax(board_copy, depth-1, alpha, beta, False)
                 max_evaluation = max(max_evaluation, evaluation)
                 alpha = max(alpha, evaluation)
                 if beta <= alpha:
