@@ -45,6 +45,8 @@ class AIPlayer(Player):
 
         for depth in range(1, max_depth+1):
             for column in valid_moves:
+                if not board.is_valid_location(column):
+                    continue
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, self.get_id())
                 score = self.minimax(
@@ -55,7 +57,7 @@ class AIPlayer(Player):
                     best_score = score
                     best_move = column
 
-            return best_move
+        return best_move
 
     def find_immediate_threat(self, board):
         """
