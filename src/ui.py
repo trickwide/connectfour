@@ -68,5 +68,5 @@ def draw_board(window, board, show_message=None, message_color=WHITE, game_font=
                                    2, (row + 1) * GRID_SIZE + GRID_SIZE // 2), CHIP_RADIUS)
     if show_message:
         draw_text(window, show_message, message_color,
-                  window.get_width() // 4, window.get_height() // 10, game_font)
+                  window.get_width() // 4, window.get_height() // 12, game_font)
     pygame.display.update()  # Update the display to show the changes
