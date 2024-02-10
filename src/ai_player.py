@@ -30,11 +30,21 @@ class AIPlayer(Player):
 
         Returns:
             int: The column number representing the best move for the AI player to make.
-                This move is determined using the minimax algorithm with a depth of 5.
+                This move is determined using the minimax algorithm with a max_depth of 5.
         """
         immediate_block_move = self.find_immediate_threat(board)
         if immediate_block_move is not None:
             return immediate_block_move
+
+        # Check all columns for a winning move before applying center control
+        for column in range(COLUMN_COUNT):
+            if board.is_valid_location(column):
+                row = board.get_next_empty_row(column)
+                board.drop_chip(column, self.get_id())
+                if board.is_winner(self.get_id()):
+                    board.board[row][column] = 0
+                    return column
+                board.board[row][column] = 0
 
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [
@@ -200,7 +210,8 @@ class AIPlayer(Player):
             for column in valid_moves:
                 board_copy = board.copy()
                 board_copy.drop_chip(column, self.get_id())
-                evaluation = self.minimax(board_copy, depth-1, alpha, beta, False)
+                evaluation = self.minimax(
+                    board_copy, depth-1, alpha, beta, False)
                 max_evaluation = max(max_evaluation, evaluation)
                 alpha = max(alpha, evaluation)
                 if beta <= alpha:
