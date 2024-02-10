@@ -65,13 +65,79 @@ class TestAIPlayer(unittest.TestCase):
         self.ai_player = AIPlayer(player_id=2)
         self.board = MockBoard()
 
-    def test_immediate_threat_blocking(self):
+    def test_center_preference(self):
         """
-        Test if the AI correctly identifies and blocks an immediate threat.
+        Test that the AI prefers to play in the center column when no immediate threats
+        or opportunities are present.
         """
-        # Setup a scenario where the opponent is one move away from winning
+
+        best_move = self.ai_player.get_best_move(self.board)
+        self.assertEqual(
+            best_move, 3, "AI should prefer the center column when the board is empty")
+
+    def test_winning_move_identifying(self):
+        """
+        Test if the AI correctly identifies and makes a winning move.
+        """
+
         for _ in range(3):
-            self.board.drop_chip(3, 1)  # Opponent's chip
-        self.ai_player.find_immediate_threat(self.board)
-        self.assertEqual(self.ai_player.get_best_move(
-            self.board), 3, "AI should block at column 3")
+            self.board.drop_chip(3, 2)  # AI's chip
+
+        expected_winning_column = 2
+        chosen_column = self.ai_player.get_best_move(self.board)
+        self.assertEqual(chosen_column, expected_winning_column,
+                         "AI should win the game by dropping chip to column 2")
+
+    def test_get_next_empty_row_full_column(self):
+        """
+        Test that get_next_empty_row returns None for a completely filled column.
+        """
+        column = 3
+
+        for _ in range(ROW_COUNT):
+            self.board.drop_chip(column, 1)
+
+        next_empty_row = self.board.get_next_empty_row(column)
+        self.assertIsNone(
+            next_empty_row, "Expected None for a full column, aka no empty rows are available.")
+
+    def test_drop_chip_in_full_column(self):
+        """
+        Test that drop_chip does not add a chip to a full column.
+        """
+        column = 3
+
+        for _ in range(ROW_COUNT):
+            self.board.drop_chip(column, 2)  # AI's chip
+
+        # Attempt to drop another chip into the full column
+        self.board.drop_chip(column, 2)
+
+        # Verify the column is still full and no additional chip has been added
+        is_column_full = all(
+            self.board.board[row][column] == 2 for row in range(ROW_COUNT))
+        self.assertTrue(
+            is_column_full, "Column should remain unchanged after attempting to drop a chip into it.")
+
+        # Also verify the top of the column did not change
+        self.assertEqual(
+            self.board.board[0][column], 2, "The top of the column should remain occupied by the original chip.")
+
+    def test_ai_skips_full_columns_when_choosing_move(self):
+        """
+        Test that the AI skips full columns when choosing the best move.
+        """
+
+        full_column = 3
+
+        for _ in range(ROW_COUNT):
+            # Fill with opponent's chips, we ignore winning moves for this test
+            self.board.drop_chip(full_column, 1)
+
+        # Adding chips to other columns to ensure the AI has to consider other columns
+        self.board.drop_chip(2, 2)
+        self.board.drop_chip(4, 2)
+
+        best_move = self.ai_player.get_best_move(self.board)
+        self.assertNotEqual(
+            best_move, full_column, "AI should not choose a full column as the best move")
