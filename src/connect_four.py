@@ -14,8 +14,8 @@ from ui import draw_board, init_ui
 pygame.init()
 
 # Constants
-WINDOW_WIDTH = 1080
-WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 700
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
