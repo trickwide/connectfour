@@ -1,8 +1,19 @@
+"""
+Test module for the Player class.
+"""
+
 import unittest
 from src.player import Player
 
 
 class TestPlayer(unittest.TestCase):
+    """
+    Test the Player class and its methods in different scenarios.
+
+    Args:
+        unittest (_type_): _description_
+    """
+
     def setUp(self):
         self.player1 = Player(1)
         self.player2 = Player(2)
