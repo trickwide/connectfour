@@ -36,16 +36,6 @@ class AIPlayer(Player):
         if immediate_block_move is not None:
             return immediate_block_move
 
-        # Check all columns for a winning move before applying center control
-        """ for column in range(COLUMN_COUNT):
-            if board.is_valid_location(column):
-                row = board.get_next_empty_row(column)
-                board.drop_chip(column, self.get_id())
-                if board.is_winner(self.get_id()):
-                    board.board[row][column] = 0
-                    return column
-                board.board[row][column] = 0 """
-
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [
             col for col in center_columns if board.is_valid_location(col)]
@@ -60,7 +50,7 @@ class AIPlayer(Player):
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, self.get_id())
                 score = self.minimax(
-                    board, depth, best_score, float("inf"), True)
+                    board, depth, best_score, float("inf"), 2)
                 board.board[row][column] = 0
 
                 if score > best_score:
@@ -176,7 +166,7 @@ class AIPlayer(Player):
 
         return score
 
-    def minimax(self, board, depth, alpha, beta, maxplayer):
+    def minimax(self, board, depth, alpha, beta, player_id):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
 
@@ -185,49 +175,51 @@ class AIPlayer(Player):
             depth (int): The depth of the search tree, indicating how many moves ahead to consider.
             alpha (float): Represents the minimum score that the maximizing player is assured of.
             beta (float): Represents maximum score that the minimizing player is assured of.
-            maxplayer (bool): A boolean indicating, if the current player is the maximizing player.
+            player_id (int): The ID of the player who is making the current move.
 
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
-        cache_key = (str(board.board), depth, maxplayer)
+        opponent_id = 1 if player_id == 2 else 2
+        is_maximizing_player = (player_id == 2)
+        
+        cache_key = (str(board.board), depth, is_maximizing_player)
         if cache_key in self.cache:
             return self.cache[cache_key]
 
         if depth == 0 or board.is_game_over():
-            if board.is_winner(self.get_id()):
-                return 100000
-            if board.is_winner(2 if self.get_id() == 1 else 1):
-                return -100000
+            if board.is_winner(player_id):
+                return 100000 - depth
+            if board.is_winner(opponent_id):
+                return -100000 + depth
 
-            return self.heuristic_value(board, self.get_id())
+            return self.heuristic_value(board, player_id)
 
-        valid_moves = [column for column in range(
-            COLUMN_COUNT) if board.is_valid_location(column)]
+        valid_moves = [column for column in range(COLUMN_COUNT) if board.is_valid_location(column)]
 
-        if maxplayer:
+        if is_maximizing_player:
             max_evaluation = float("-inf")
             for column in valid_moves:
                 board_copy = board.copy()
-                board_copy.drop_chip(column, self.get_id())
-                evaluation = self.minimax(
-                    board_copy, depth-1, alpha, beta, False)
+                board_copy.drop_chip(column, player_id)
+                evaluation = self.minimax(board_copy, depth-1, alpha, beta, opponent_id)
                 max_evaluation = max(max_evaluation, evaluation)
                 alpha = max(alpha, evaluation)
-                if max_evaluation >= beta:
+                if alpha >= beta:
                     break
             self.cache[cache_key] = max_evaluation
             return max_evaluation
+        else:
+            min_evaluation = float("inf")
+            for column in valid_moves:
+                board_copy = board.copy()
+                board_copy.drop_chip(column, player_id)
+                evaluation = self.minimax(board_copy, depth-1, alpha, beta, 2)
+                min_evaluation = min(min_evaluation, evaluation)
+                beta = min(beta, evaluation)
+                if beta <= alpha:
+                    break
+            self.cache[cache_key] = min_evaluation
+            return min_evaluation
 
-        min_evaluation = float("inf")
-        for column in valid_moves:
-            board_copy = board.copy()
-            board_copy.drop_chip(column, self.get_id())
-            evaluation = self.minimax(
-                board_copy, depth-1, alpha, beta, True)
-            min_evaluation = min(min_evaluation, evaluation)
-            beta = min(beta, evaluation)
-            if min_evaluation <= alpha:
-                break
-        self.cache[cache_key] = min_evaluation
-        return min_evaluation
+
