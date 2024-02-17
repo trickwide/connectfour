@@ -6,31 +6,8 @@ Tämä ohjelma on toteutettu osana Helsingin yliopiston tietojenkäsittelytietee
 
 ## Dokumentaatio
 
+- [Käyttöohje](./dokumentaatio/kayttoohje.md)
 - [Määrittelydokumentti](./dokumentaatio/maarittelydokumentti.md)
+- [Testausdokumentti](./dokumentaatio/testausdokumentti.md)
+- [Toteutusdokumentti](./dokumentaatio/toteutusdokumentti.md)
 - [Viikkoraportit](./dokumentaatio/viikkoraportit/)
-
-## Komennot
-
-Asenna ensimmäiseksi projektin riippuvuudet repositorion kloonauksen ja projektin juurihakemistoon siirtymisen jälkeen
-
-```bash
-poetry install
-```
-
-Pelin käynnistäminen
-
-```bash
-poetry run invoke start
-```
-
-Projektin testien ajaminen
-
-```bash
-poetry run invoke test
-```
-
-Projektin testikattavuusraportti
-
-```bash
-poetry run invoke report
-```
