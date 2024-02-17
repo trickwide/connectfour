@@ -42,11 +42,30 @@ class MockBoard:
         """
         Check if the specified player has won the game.
         """
-        # Simplified check for horizontal win
+        # Check for horizontal win
         for row in range(ROW_COUNT):
             for col in range(COLUMN_COUNT - 3):
                 if all(self.board[row][col+i] == player_id for i in range(4)):
                     return True
+
+        # Check for vertical win
+        for col in range(COLUMN_COUNT):
+            for row in range(ROW_COUNT - 3):
+                if all(self.board[row+i][col] == player_id for i in range(4)):
+                    return True
+
+        # Check for positive diagonal win
+        for row in range(ROW_COUNT - 3):
+            for col in range(COLUMN_COUNT - 3):
+                if all(self.board[row+i][col+i] == player_id for i in range(4)):
+                    return True
+
+        # Check for negative diagonal win
+        for row in range(3, ROW_COUNT):
+            for col in range(COLUMN_COUNT - 3):
+                if all(self.board[row-i][col+i] == player_id for i in range(4)):
+                    return True
+
         return False
 
     def is_game_over(self):
@@ -94,7 +113,7 @@ class TestAIPlayer(unittest.TestCase):
         for _ in range(3):
             self.board.drop_chip(3, 2)  # AI's chip
 
-        expected_winning_column = 2
+        expected_winning_column = 3
         chosen_column = self.ai_player.get_best_move(self.board)
         self.assertEqual(chosen_column, expected_winning_column,
                          "AI should win the game by dropping chip to column 2")
@@ -154,3 +173,17 @@ class TestAIPlayer(unittest.TestCase):
         best_move = self.ai_player.get_best_move(self.board)
         self.assertNotEqual(
             best_move, full_column, "AI should not choose a full column as the best move")
+
+    def test_find_immediate_threat(self):
+        """
+        Test if the AI correctly identifies an immediate threat.
+        """
+
+        # Set up a scenario where the opponent is one move away from winning
+        for _ in range(3):
+            self.board.drop_chip(3, 1)  # Opponent's chip
+
+        expected_threat_column = 3
+        identified_threat_column = self.ai_player.find_immediate_threat(self.board)
+        self.assertEqual(identified_threat_column, expected_threat_column,
+                        "AI should identify the immediate threat at column 3")
