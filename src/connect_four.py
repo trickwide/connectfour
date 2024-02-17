@@ -54,17 +54,28 @@ def reset_game():
     message_color = WHITE  # Reset the message color to default
 
 
-control_method = None
-while control_method is None:
-    draw_start_menu(window, game_font)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_m:
-                control_method = "mouse"
-            elif event.key == pygame.K_k:
-                control_method = "keyboard"
+def show_start_menu():
+    """Show the start menu and wait for the user to select a control method.
+
+    Returns:
+        str: The control method selected by the user, either "mouse" or "keyboard".
+    """
+    control_method = None
+    while control_method is None:
+        draw_start_menu(window, game_font)
+        for menu_event in pygame.event.get():
+            if menu_event.type == pygame.QUIT:
+                pygame.quit()
+            elif menu_event.type == pygame.KEYDOWN:
+                if menu_event.key == pygame.K_m:
+                    control_method = "mouse"
+                elif menu_event.key == pygame.K_k:
+                    control_method = "keyboard"
+    return control_method
+
+
+# Start the game and show the start menu
+control = show_start_menu()
 
 while running:
     for event in pygame.event.get():
@@ -89,8 +100,9 @@ while running:
             if event.key == pygame.K_LEFT:  # Move selection left
                 current_column = max(0, current_column - 1)
             elif event.key == pygame.K_RIGHT:  # Move selection right
-                current_column = min(board.column_count - 1, current_column + 1)
-            elif event.key == pygame.K_SPACE and current_player == player1 and not game_over:  # Drop the chip with keyboard
+                current_column = min(board.column_count -
+                                     1, current_column + 1)
+            elif event.key == pygame.K_SPACE and current_player == player1 and not game_over:
                 if board.is_valid_location(current_column):
                     board.drop_chip(current_column, player1.get_id())
                     if board.is_winner(player1.get_id()):
@@ -106,6 +118,9 @@ while running:
                         ai_thinking = True
             elif event.key == pygame.K_r:  # Reset game
                 reset_game()
+            elif event.key == pygame.K_m:  # Back to start menu
+                reset_game()
+                control = show_start_menu()
 
     if current_player == player2 and ai_thinking and not game_over:
         best_move = player2.get_best_move(board)
@@ -122,10 +137,10 @@ while running:
             else:
                 current_player = player1
                 ai_thinking = False
-                
-    if control_method == "mouse":
+
+    if control == "mouse":
         x, _ = pygame.mouse.get_pos()
-        current_column = x // 100            
+        current_column = x // 100
 
     draw_board(window, board, game_over_message if game_over else None,
                message_color, game_font, current_column, current_player)
