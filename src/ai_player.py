@@ -214,7 +214,7 @@ class AIPlayer(Player):
                     board_copy, depth-1, alpha, beta, False)
                 max_evaluation = max(max_evaluation, evaluation)
                 alpha = max(alpha, evaluation)
-                if beta <= alpha:
+                if max_evaluation >= beta:
                     break
             self.cache[cache_key] = max_evaluation
             return max_evaluation
@@ -222,12 +222,12 @@ class AIPlayer(Player):
         min_evaluation = float("inf")
         for column in valid_moves:
             board_copy = board.copy()
-            board_copy.drop_chip(column, 1 if self.get_id() == 2 else 2)
+            board_copy.drop_chip(column, self.get_id())
             evaluation = self.minimax(
                 board_copy, depth-1, alpha, beta, True)
             min_evaluation = min(min_evaluation, evaluation)
             beta = min(beta, evaluation)
-            if beta <= alpha:
+            if min_evaluation <= alpha:
                 break
         self.cache[cache_key] = min_evaluation
         return min_evaluation
