@@ -8,7 +8,7 @@ import pygame
 from board import Board
 from player import Player
 from ai_player import AIPlayer
-from ui import draw_board, init_ui
+from ui import draw_board, init_ui, draw_start_menu
 
 # Initialize pygame and set up window size
 pygame.init()
@@ -37,6 +37,7 @@ ai_thinking = False
 game_over = False  # Flag to indicate game over
 game_over_message = ""
 message_color = WHITE
+current_column = 0
 
 
 def reset_game():
@@ -52,6 +53,18 @@ def reset_game():
     game_over_message = ""  # Clear any game over message
     message_color = WHITE  # Reset the message color to default
 
+
+control_method = None
+while control_method is None:
+    draw_start_menu(window, game_font)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_m:
+                control_method = "mouse"
+            elif event.key == pygame.K_k:
+                control_method = "keyboard"
 
 while running:
     for event in pygame.event.get():
@@ -73,7 +86,25 @@ while running:
                     current_player = player2
                     ai_thinking = True
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:  # If 'R' key is pressed
+            if event.key == pygame.K_LEFT:  # Move selection left
+                current_column = max(0, current_column - 1)
+            elif event.key == pygame.K_RIGHT:  # Move selection right
+                current_column = min(board.column_count - 1, current_column + 1)
+            elif event.key == pygame.K_SPACE and current_player == player1 and not game_over:  # Drop the chip with keyboard
+                if board.is_valid_location(current_column):
+                    board.drop_chip(current_column, player1.get_id())
+                    if board.is_winner(player1.get_id()):
+                        game_over_message = "Player 1 (Red) wins!"
+                        message_color = RED
+                        game_over = True
+                    elif board.is_board_full():
+                        game_over_message = "It's a draw!"
+                        message_color = WHITE
+                        game_over = True
+                    else:
+                        current_player = player2
+                        ai_thinking = True
+            elif event.key == pygame.K_r:  # Reset game
                 reset_game()
 
     if current_player == player2 and ai_thinking and not game_over:
@@ -91,9 +122,13 @@ while running:
             else:
                 current_player = player1
                 ai_thinking = False
+                
+    if control_method == "mouse":
+        x, _ = pygame.mouse.get_pos()
+        current_column = x // 100            
 
     draw_board(window, board, game_over_message if game_over else None,
-               message_color, game_font)
+               message_color, game_font, current_column, current_player)
 
     if game_over:
         pygame.time.delay(3000)  # Show the game over message for 3 seconds

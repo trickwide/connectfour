@@ -39,7 +39,7 @@ def draw_text(window, text, color, x, y, game_font):
     window.blit(text_surface, (x, y))
 
 
-def draw_board(window, board, show_message=None, message_color=WHITE, game_font=None):
+def draw_board(window, board, show_message=None, message_color=WHITE, game_font=None, current_column=None, current_player=None):
     """
     Draw the game board on the window.
 
@@ -54,6 +54,11 @@ def draw_board(window, board, show_message=None, message_color=WHITE, game_font=
     GRID_SIZE = 100
     CHIP_RADIUS = GRID_SIZE // 2 - 5
     window.fill(BLACK)  # Clear the window first
+    
+    if current_column is not None and current_player is not None:
+        pygame.draw.circle(window, RED if current_player.get_id() == 1 else YELLOW, 
+                           (current_column * 100 + 50, 50), 45)
+    
     for row in range(board.row_count - 1, -1, -1):
         for col in range(board.column_count):
             pygame.draw.rect(window, BLUE, (col * GRID_SIZE,
@@ -70,3 +75,17 @@ def draw_board(window, board, show_message=None, message_color=WHITE, game_font=
         draw_text(window, show_message, message_color,
                   window.get_width() // 4, window.get_height() // 12, game_font)
     pygame.display.update()  # Update the display to show the changes
+
+def draw_start_menu(window, game_font):
+    """
+    Draw the start menu on the window.
+
+    Args:
+        window (pygame.Surface): The window to draw the start menu on.
+        game_font (pygame.font.Font): The font to use for rendering the start menu.
+    """
+    window.fill(BLACK)
+    draw_text(window, "Connect Four", WHITE, window.get_width() // 3, window.get_height() // 4, game_font)
+    draw_text(window, "Press M for mouse control", WHITE, window.get_width() // 5, window.get_height() // 2, game_font)
+    draw_text(window, "Press K for keyboard control", WHITE, window.get_width() // 5, window.get_height() * 3 // 4, game_font)
+    pygame.display.update()
