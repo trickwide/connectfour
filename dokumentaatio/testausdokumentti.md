@@ -6,13 +6,20 @@ Sovelluksen testausta on suoritettu manuaalisesti sekä automatisoiduilla yksikk
 
 ### Sovelluslogiikan testaus
 
+Sovelluksen testit ajetaan komennolla `poetry run invoke test`.
+
+Tällä hetkellä sovelluslogiikasta on testattu luokkien `Board` ja `Player` 100 % -testikattavuudella. `AIPlayer`-luokan testikattavuus on 98 %. Sovelluksen käyttöliittymä on tarkoituksellisesti jätetty pois testikattavuuden ulkopuolelle.
+
+Yksikkötesteihin on hyödynnetty Pythonin Unittest -testausviitekehystä. Testien luomisessa on varmistettu, että testit testaavat luokkien metodeja ja erilaisia pelitilanteita kattavasti.
+Connect Fourissa on lukemattomia erilaisia pelitilanteita ja tästä johtuen kaikkia mahdollisia pelitilanteita ei ole testattu.
+
+Testien suorittamisessa menee ~3,6 sekuntia.
+
+### Testikattavuus
+
 [![codecov](https://codecov.io/gh/trickwide/connectfour/graph/badge.svg?token=m5Vq06Tz6a)](https://codecov.io/gh/trickwide/connectfour)
 
 Sovelluksen tämän hetkisen testikattavuuden näet yllä olevaa badgea klikkaamalla.
-
-Sovelluksen testit ajetaan komennolla `poetry run invoke test`.
-
-Tällä hetkellä sovelluslogiikasta on testattu luokkien `Board` ja `Player` 100 % -testikattavuudella. `AIPlayer`-luokalle ei ole vielä luotu kaiken kattavia testejä, mutta nämä tullaan tekemään tulevien viikkojen aikana, jotta eri pelitilanteita ja luokan funktioiden toimintaa pystytään tarkastelemaan automaattitestauksen kautta. Sovelluksen käyttöliittymä on tarkoituksellisesti jätetty pois testikattavuuden ulkopuolelle.
 
 ## Manuaalinen testaus
 
