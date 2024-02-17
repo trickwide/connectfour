@@ -128,13 +128,13 @@ class TestAIPlayer(unittest.TestCase):
         is_column_full = all(
             self.board.board[row][column] == 2 for row in range(ROW_COUNT))
         self.assertTrue(
-            is_column_full,\
-                "Column should remain unchanged after attempting to drop a chip into it.")
+            is_column_full,
+            "Column should remain unchanged after attempting to drop a chip into it.")
 
         # Also verify the top of the column did not change
         self.assertEqual(
-            self.board.board[0][column], 2,\
-                "The top of the column should remain occupied by the original chip.")
+            self.board.board[0][column], 2,
+            "The top of the column should remain occupied by the original chip.")
 
     def test_ai_skips_full_columns_when_choosing_move(self):
         """
