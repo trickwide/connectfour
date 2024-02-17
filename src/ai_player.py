@@ -183,8 +183,8 @@ class AIPlayer(Player):
         Args:
             board (Board): An instance of the game board representing the current game state.
             depth (int): The depth of the search tree, indicating how many moves ahead to consider.
-            alpha (float): The best score found so far for the maximizing player.
-            beta (float): The best score found so far for the minimizing player.
+            alpha (float): Represents the minimum score that the maximizing player is assured of.
+            beta (float): Represents maximum score that the minimizing player is assured of.
             maxplayer (bool): A boolean indicating, if the current player is the maximizing player.
 
         Returns:
