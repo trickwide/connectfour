@@ -37,14 +37,14 @@ class AIPlayer(Player):
             return immediate_block_move
 
         # Check all columns for a winning move before applying center control
-        for column in range(COLUMN_COUNT):
+        """ for column in range(COLUMN_COUNT):
             if board.is_valid_location(column):
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, self.get_id())
                 if board.is_winner(self.get_id()):
                     board.board[row][column] = 0
                     return column
-                board.board[row][column] = 0
+                board.board[row][column] = 0 """
 
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [
@@ -197,7 +197,7 @@ class AIPlayer(Player):
         if depth == 0 or board.is_game_over():
             if board.is_winner(self.get_id()):
                 return 100000
-            if board.is_winner(1 if self.get_id() == 1 else 2):
+            if board.is_winner(2 if self.get_id() == 1 else 1):
                 return -100000
 
             return self.heuristic_value(board, self.get_id())
