@@ -97,6 +97,8 @@ class Board:
         Returns:
            bool: True if the player has won, False otherwise.
         """
+        # Viimeisimmän siirron passaus, viimeinen siirto on osa riviä. Lasketaan, mennään niin kauan eteenpäin kunnes ei enää löydy pelaajan merkkiä. esim. while -silmukka
+        
         # Check for a horizontal win
         for row in range(self.row_count):
             for column in range(self.column_count - 3):
@@ -142,7 +144,8 @@ class Board:
         Returns:
             bool: True if the game is over, False otherwise.
         """
-        return self.is_board_full() or self.is_winner(1) or self.is_winner(2)
+        if self.is_winner(1) or self.is_winner(2):
+            return True
 
     def is_board_full(self):
         """
