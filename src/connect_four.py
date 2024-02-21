@@ -38,6 +38,7 @@ game_over = False  # Flag to indicate game over
 game_over_message = ""
 message_color = WHITE
 current_column = 0
+total_moves = 0
 
 
 def reset_game():
@@ -85,13 +86,10 @@ while running:
             column_clicked = event.pos[0] // 100
             if board.is_valid_location(column_clicked):
                 board.drop_chip(column_clicked, player1.get_id())
+                total_moves += 1
                 if board.is_winner(player1.get_id()):
                     game_over_message = "Player 1 (Red) wins!"
                     message_color = RED
-                    game_over = True
-                elif board.is_board_full():
-                    game_over_message = "It's a draw!"
-                    message_color = WHITE
                     game_over = True
                 else:
                     current_player = player2
@@ -109,10 +107,6 @@ while running:
                         game_over_message = "Player 1 (Red) wins!"
                         message_color = RED
                         game_over = True
-                    elif board.is_board_full():
-                        game_over_message = "It's a draw!"
-                        message_color = WHITE
-                        game_over = True
                     else:
                         current_player = player2
                         ai_thinking = True
@@ -123,14 +117,15 @@ while running:
                 control = show_start_menu()
 
     if current_player == player2 and ai_thinking and not game_over:
-        best_move = player2.get_best_move(board)
+        best_move = player2.get_best_move(board, total_moves)
+        total_moves += 1
         if best_move is not None:
             board.drop_chip(best_move, player2.get_id())
             if board.is_winner(player2.get_id()):
                 game_over_message = "Player 2 (AI - Yellow) wins!"
                 message_color = YELLOW
                 game_over = True
-            elif board.is_board_full():
+            elif total_moves == 42: # Check if the board is full and call it a draw
                 game_over_message = "It's a draw!"
                 message_color = WHITE
                 game_over = True
