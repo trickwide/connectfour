@@ -31,7 +31,7 @@ class AIPlayer(Player):
 
         Returns:
             int: The column number representing the best move for the AI player to make.
-                This move is determined using the minimax algorithm with a max_depth of 5.
+                This move is determined using the minimax algorithm with a max_depth of 20.
         """
         immediate_block_move = self.find_immediate_threat(board)
         if immediate_block_move is not None:
@@ -42,33 +42,28 @@ class AIPlayer(Player):
             col for col in center_columns if board.is_valid_location(col)]
 
         best_move = None
-        depth = 1
-        
         time_start = time.time()
+        time_limit = 3  # seconds
 
-        while depth < max_depth:
+        for depth in range(1, max_depth):
             best_score = float("-inf")
             alpha = float("-inf")
+            beta = float("inf")
             for column in valid_moves:
                 if not board.is_valid_location(column):
                     continue
                 row = board.get_next_empty_row(column)
-                board.drop_chip(column, self.get_id())
-                score = self.minimax(
-                    board, max_depth, alpha, float("inf"), True, total_moves)
-                board.board[row][column] = 0
+                board.drop_chip(column, 2)
+                score = self.minimax(board, depth, alpha, beta, False, total_moves + 1)
+                board.board[row][column] = 0  # Undo move
 
                 if score > best_score:
                     best_score = score
-                    alpha = max(alpha, best_score)
                     best_move = column
-                    valid_moves.remove(best_move)
-                    valid_moves.insert(0, best_move)
-            
-            print(f"Depth: {depth}")
-            depth += 1
-            if time.time() - time_start > 3:
-                break
+
+                if time.time() - time_start > time_limit:
+                    print(f"Depth reached before time limit: {depth}")
+                    return best_move
 
         return best_move
 
@@ -87,8 +82,9 @@ class AIPlayer(Player):
             if board.is_valid_location(column):
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, 1)
-                if board.is_winner(1 if self.get_id() == 2 else 2):
+                if board.is_winner(1):
                     board.board[row][column] = 0
+                    print("Found a threat")
                     return column
                 board.board[row][column] = 0
         return None
@@ -178,13 +174,26 @@ class AIPlayer(Player):
                     np.flipud(board.board[row:row+4, column:column+4]).diagonal())
                 score += self.evaluate_window(window, player_id)
 
-        print(score)
         return score
     
     def generate_cache_key(self, board, player_id):
-        board_state = tuple(tuple(row) for row in board.board)  # Assuming 'board.board' is a 2D list representing the board
+        board_state = tuple(tuple(row) for row in board.board)
         return (board_state, player_id)
-
+    
+    def check_if_terminal_node(self, board, depth):
+        node = False
+        
+        if board.is_winner(2):
+            node = 2000
+            
+            if depth == 19:
+                node = 3000
+        if board.is_winner(1):
+            node = -2000
+            if depth == 18:
+                node = -3000
+        return node
+            
 
     def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
         """
@@ -200,22 +209,22 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
-        print("total moves", total_moves)
-        print("Minimax depth", depth)
-        player_id = 2
-        cache_key = self.generate_cache_key(board, player_id)
+        total_moves_copy = total_moves
+        cache_key = self.generate_cache_key(board, 2)
+        
+        terminal_node = self.check_if_terminal_node(board, depth)
+        
+        if terminal_node is not False:
+            return terminal_node
         
         if cache_key in self.cache:
             return self.cache[cache_key]
         
-        if board.is_winner(2):
-            return 100000 + depth
-        elif board.is_winner(1):
-            return -100000 - depth
-        elif total_moves >= 42:  # Board is full
-            return 0
         if depth == 0:
-            return self.heuristic_value(board, self.get_id())
+            return self.heuristic_value(board, 2)
+        
+        if total_moves == 42:
+            return 0
 
         valid_moves = [column for column in range(COLUMN_COUNT) if board.is_valid_location(column)]
         
@@ -227,8 +236,8 @@ class AIPlayer(Player):
             best_column = None
             for column in valid_moves:
                 board_copy = board.copy()
-                board_copy.drop_chip(column, player_id)
-                evaluation = self.minimax(board_copy, depth-1, alpha, beta, False, total_moves+1)
+                board_copy.drop_chip(column, 2)
+                evaluation = self.minimax(board_copy, depth-1, alpha, beta, False, total_moves_copy+1)
                 if evaluation > max_evaluation:
                     max_evaluation = evaluation
                     best_column = column
