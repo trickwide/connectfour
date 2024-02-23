@@ -144,8 +144,7 @@ class Board:
         Returns:
             bool: True if the game is over, False otherwise.
         """
-        if self.is_winner(1) or self.is_winner(2):
-            return True
+        return self.is_board_full() or self.is_winner(1) or self.is_winner(2)
 
     def is_board_full(self):
         """
