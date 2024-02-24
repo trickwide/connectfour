@@ -111,8 +111,10 @@ while running:
                         current_player = player2
                         ai_thinking = True
             elif event.key == pygame.K_r:  # Reset game
+                total_moves = 0
                 reset_game()
             elif event.key == pygame.K_m:  # Back to start menu
+                total_moves = 0
                 reset_game()
                 control = show_start_menu()
 
@@ -142,6 +144,7 @@ while running:
 
     if game_over:
         pygame.time.delay(3000)  # Show the game over message for 3 seconds
+        total_moves = 0
         reset_game()  # Reset the game
 
 pygame.quit()
