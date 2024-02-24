@@ -86,6 +86,8 @@ while running:
             column_clicked = event.pos[0] // 100
             if board.is_valid_location(column_clicked):
                 board.drop_chip(column_clicked, player1.get_id())
+                draw_board(window, board, game_over_message if game_over else None,
+                           message_color, game_font, current_column, current_player)
                 total_moves += 1
                 if board.is_winner(player1.get_id()):
                     game_over_message = "Player 1 (Red) wins!"
@@ -127,7 +129,7 @@ while running:
                 game_over_message = "Player 2 (AI - Yellow) wins!"
                 message_color = YELLOW
                 game_over = True
-            elif total_moves == 42: # Check if the board is full and call it a draw
+            elif total_moves == 42:  # Check if the board is full and call it a draw
                 game_over_message = "It's a draw!"
                 message_color = WHITE
                 game_over = True
