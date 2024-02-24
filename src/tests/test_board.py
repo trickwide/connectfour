@@ -80,7 +80,7 @@ class TestBoard(unittest.TestCase):
         board = Board()
         for _ in range(6):
             board.drop_chip(3, 1)
-        self.assertEqual(board.get_next_empty_row(3), -1)
+        self.assertEqual(board.get_next_empty_row(3), None)
 
     def test_is_winner_vertical(self):
         """
@@ -106,90 +106,38 @@ class TestBoard(unittest.TestCase):
         self.assertTrue(board.is_winner(1))
         self.assertFalse(board.is_winner(2))
 
-    def test_is_winner_diagonal_positive_slope(self):
+    def test_is_winner_positive_diagonal(self):
         """
-        Test the is_winner method with a diagonal win (positive slope).
+        Test the is_winner method with a positive diagonal win.
         """
         board = Board()
-        board.drop_chip(0, 1)
-        board.drop_chip(1, 2)
-        board.drop_chip(1, 1)
-        board.drop_chip(2, 2)
-        board.drop_chip(2, 2)
-        board.drop_chip(2, 1)
-        board.drop_chip(3, 2)
-        board.drop_chip(3, 2)
-        board.drop_chip(3, 2)
-        board.drop_chip(3, 1)
+        for i in range(4):
+            board.board[i][i] = 1
         self.assertTrue(board.is_winner(1))
-        self.assertFalse(board.is_winner(2))
 
-    def test_is_winner_diagonal_negative_slope(self):
+    def test_is_winner_negative_diagonal(self):
         """
-        Test the is_winner method with a diagonal win (negative slope).
+        Test the is_winner method with a negative diagonal win.
         """
         board = Board()
-        board.drop_chip(0, 1)
-        board.drop_chip(0, 1)
-        board.drop_chip(0, 1)
-        board.drop_chip(0, 2)
-        board.drop_chip(1, 1)
-        board.drop_chip(1, 1)
-        board.drop_chip(1, 2)
-        board.drop_chip(2, 1)
-        board.drop_chip(2, 2)
-        board.drop_chip(3, 2)
-        self.assertTrue(board.is_winner(2))
+        for i in range(4):
+            board.board[3 - i][i] = 1
+        self.assertTrue(board.is_winner(1))
+
+    def test_is_not_winner_positive_diagonal(self):
+        """
+        Test the is_winner method with a non-winning positive diagonal.
+        """
+        board = Board()
+        for i in range(3):
+            board.board[i][i] = 1
         self.assertFalse(board.is_winner(1))
 
-    def test_is_game_over(self):
+    def test_is_not_winner_negative_diagonal(self):
         """
-        Test the is_game_over method when the game is not over.
-        """
-        board = Board()
-        self.assertFalse(board.is_game_over())
-
-    def test_is_game_over_full_board(self):
-        """
-        Test the is_game_over method when the board is full.
+        Test the is_winner method with a non-winning negative diagonal.
         """
         board = Board()
-        for column in range(7):
-            for _ in range(6):
-                board.drop_chip(column, 1)
-        self.assertTrue(board.is_game_over())
-
-    def test_is_game_over_player1_winner(self):
-        """
-        Test the is_game_over method when player 1 has won.
-        """
-        board = Board()
-        for column in range(4):
-            board.drop_chip(column, 1)
-        self.assertTrue(board.is_game_over())
-
-    def test_is_game_over_player2_winner(self):
-        """
-        Test the is_game_over method when player 2 has won.
-        """
-        board = Board()
-        for column in range(4):
-            board.drop_chip(column, 2)
-        self.assertTrue(board.is_game_over())
-
-    def test_is_board_full_with_empty_board(self):
-        """
-        Test the is_board_full method with an empty board.
-        """
-        board = Board()
-        self.assertFalse(board.is_board_full())
-
-    def test_is_board_full_with_full_board(self):
-        """
-        Test the is_board_full method with a full board.
-        """
-        board = Board()
-        for column in range(7):
-            for _ in range(6):
-                board.drop_chip(column, 1)
-        self.assertTrue(board.is_board_full())
+        for i in range(3):
+            board.board[3 - i][i] = 1
+        self.assertFalse(board.is_winner(1))

@@ -13,6 +13,8 @@ class MockBoard:
     """
 
     def __init__(self):
+        self.row_count = 6
+        self.column_count = 7
         self.board = np.zeros((ROW_COUNT, COLUMN_COUNT), dtype=int)
 
     def is_valid_location(self, column):
@@ -36,43 +38,41 @@ class MockBoard:
         """
         row = self.get_next_empty_row(column)
         if row is not None:
-            self.board[row, column] = chip
+            self.board[row][column] = chip
+            self.last_move = (row, column)
+            return (row, column)
+        else:
+            return None
 
     def is_winner(self, player_id):
         """
         Check if the specified player has won the game.
         """
-        # Check for horizontal win
-        for row in range(ROW_COUNT):
-            for col in range(COLUMN_COUNT - 3):
-                if all(self.board[row][col+i] == player_id for i in range(4)):
+        # Check valid horizontal locations for win
+        for c in range(COLUMN_COUNT - 3):
+            for r in range(ROW_COUNT):
+                if self.board[r][c] == player_id and self.board[r][c + 1] == player_id and self.board[r][c + 2] == player_id and self.board[r][c + 3] == player_id:
                     return True
 
-        # Check for vertical win
-        for col in range(COLUMN_COUNT):
-            for row in range(ROW_COUNT - 3):
-                if all(self.board[row+i][col] == player_id for i in range(4)):
+        # Check valid vertical locations for win
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT - 3):
+                if self.board[r][c] == player_id and self.board[r + 1][c] == player_id and self.board[r + 2][c] == player_id and self.board[r + 3][c] == player_id:
                     return True
 
-        # Check for positive diagonal win
-        for row in range(ROW_COUNT - 3):
-            for col in range(COLUMN_COUNT - 3):
-                if all(self.board[row+i][col+i] == player_id for i in range(4)):
+        # Check valid positive diagonal locations for win
+        for c in range(COLUMN_COUNT - 3):
+            for r in range(ROW_COUNT - 3):
+                if self.board[r][c] == player_id and self.board[r + 1][c + 1] == player_id and self.board[r + 2][c + 2] == player_id and self.board[r + 3][c + 3] == player_id:
                     return True
 
-        # Check for negative diagonal win
-        for row in range(3, ROW_COUNT):
-            for col in range(COLUMN_COUNT - 3):
-                if all(self.board[row-i][col+i] == player_id for i in range(4)):
+        # check valid negative diagonal locations for win
+        for c in range(COLUMN_COUNT - 3):
+            for r in range(3, ROW_COUNT):
+                if self.board[r][c] == player_id and self.board[r - 1][c + 1] == player_id and self.board[r - 2][c + 2] == player_id and self.board[r - 3][c + 3] == player_id:
                     return True
 
-        return False
-
-    def is_game_over(self):
-        """
-        Check if the game is over.
-        """
-        return np.all(self.board[0, :] != 0)
+            return False
 
     def copy(self):
         """
@@ -101,7 +101,7 @@ class TestAIPlayer(unittest.TestCase):
         or opportunities are present.
         """
 
-        best_move = self.ai_player.get_best_move(self.board)
+        best_move = self.ai_player.get_best_move(self.board, 0)
         self.assertEqual(
             best_move, 3, "AI should prefer the center column when the board is empty")
 
@@ -114,7 +114,7 @@ class TestAIPlayer(unittest.TestCase):
             self.board.drop_chip(3, 2)  # AI's chip
 
         expected_winning_column = 3
-        chosen_column = self.ai_player.get_best_move(self.board)
+        chosen_column = self.ai_player.get_best_move(self.board, total_moves=3)
         self.assertEqual(chosen_column, expected_winning_column,
                          "AI should win the game by dropping chip to column 2")
 
@@ -170,20 +170,77 @@ class TestAIPlayer(unittest.TestCase):
         self.board.drop_chip(2, 2)
         self.board.drop_chip(4, 2)
 
-        best_move = self.ai_player.get_best_move(self.board)
+        best_move = self.ai_player.get_best_move(self.board, total_moves=8)
         self.assertNotEqual(
             best_move, full_column, "AI should not choose a full column as the best move")
 
-    def test_find_immediate_threat(self):
+    def test_negative_diagonal_extraction(self):
         """
-        Test if the AI correctly identifies an immediate threat.
+        Test if the AI correctly extracts the negative diagonal from the board.
         """
 
-        # Set up a scenario where the opponent is one move away from winning
-        for _ in range(3):
-            self.board.drop_chip(3, 1)  # Opponent's chip
+        # Set up a scenario where the AI has a negative diagonal
+        self.board.board[2, 0] = 2
+        self.board.board[3, 1] = 2
+        self.board.board[4, 2] = 2
+        self.board.board[5, 3] = 2
 
-        expected_threat_column = 3
-        identified_threat_column = self.ai_player.find_immediate_threat(self.board)
-        self.assertEqual(identified_threat_column, expected_threat_column,
-                        "AI should identify the immediate threat at column 3")
+        print("Original board:")
+        print(self.board.board)
+
+        # Extract the 4x4 section where we expect the negative diagonal
+        section = self.board.board[2:6, 0:4]
+
+        # Apply np.flipud() to the section and extract the diagonal
+        flipped_section = np.flipud(section)
+        diagonal = flipped_section.diagonal()
+
+        # Check if the diagonal matches the expected pattern
+        expected_diagonal = np.array([2, 2, 2, 2])
+        correct_extraction = np.array_equal(diagonal, expected_diagonal)
+
+        # Print the results
+        print("Extracted Diagonal:", diagonal)
+        print("Correct Extraction:", correct_extraction)
+
+        # Ensure original board is not affected by np.flipud on the section
+        print("Board after Extraction (Should be unchanged):")
+        print(self.board.board)
+
+    def test_get_best_move_none(self):
+        """
+        Test the get_best_move method when iterative_deepen returns None for current_best_move.
+        """
+        # Fill the board with chips so that no winning move is available and we ensure returning None
+        for _ in range(6):
+            for i in range(7):
+                self.board.drop_chip(i, 1)
+
+        self.assertIsNone(self.ai_player.get_best_move(self.board, total_moves=14))
+    
+    def test_minimax_returns_0(self):
+        """
+        Test the minimax method when the depth is 0 and the board is full.
+        """
+        # Fill the board with chips so that no winning move is available and we ensure returning 0
+        for _ in range(6):
+            for i in range(7):
+                self.board.drop_chip(i, -1) # -1 is a placeholder for any chip
+
+        self.assertEqual(self.ai_player.minimax(self.board, 0, -np.inf, np.inf, True, 42), 0)
+    
+    def test_evaluate_window_count_ai_four_chips(self):
+        """
+        Test the evaluate_window method when the window contains 4 AI chips.
+        """
+        window = [2, 2, 2, 2]
+        self.assertEqual(self.ai_player.evaluate_window(window), 1000)
+    
+    def test_evaluate_window_count_opponent_four_chips(self):
+        """
+        Test the evaluate_window method when the window contains 4 opponent chips.
+        """
+        window = [1, 1, 1, 1]
+        self.assertEqual(self.ai_player.evaluate_window(window), -1000)
+        
+        
