@@ -105,6 +105,8 @@ while running:
             elif event.key == pygame.K_SPACE and current_player == player1 and not game_over:
                 if board.is_valid_location(current_column):
                     board.drop_chip(current_column, player1.get_id())
+                    draw_board(window, board, game_over_message if game_over else None,
+                               message_color, game_font, current_column, current_player)
                     if board.is_winner(player1.get_id()):
                         game_over_message = "Player 1 (Red) wins!"
                         message_color = RED
