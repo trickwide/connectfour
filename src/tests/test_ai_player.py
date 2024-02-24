@@ -174,39 +174,6 @@ class TestAIPlayer(unittest.TestCase):
         self.assertNotEqual(
             best_move, full_column, "AI should not choose a full column as the best move")
 
-    def test_negative_diagonal_extraction(self):
-        """
-        Test if the AI correctly extracts the negative diagonal from the board.
-        """
-
-        # Set up a scenario where the AI has a negative diagonal
-        self.board.board[2, 0] = 2
-        self.board.board[3, 1] = 2
-        self.board.board[4, 2] = 2
-        self.board.board[5, 3] = 2
-
-        print("Original board:")
-        print(self.board.board)
-
-        # Extract the 4x4 section where we expect the negative diagonal
-        section = self.board.board[2:6, 0:4]
-
-        # Apply np.flipud() to the section and extract the diagonal
-        flipped_section = np.flipud(section)
-        diagonal = flipped_section.diagonal()
-
-        # Check if the diagonal matches the expected pattern
-        expected_diagonal = np.array([2, 2, 2, 2])
-        correct_extraction = np.array_equal(diagonal, expected_diagonal)
-
-        # Print the results
-        print("Extracted Diagonal:", diagonal)
-        print("Correct Extraction:", correct_extraction)
-
-        # Ensure original board is not affected by np.flipud on the section
-        print("Board after Extraction (Should be unchanged):")
-        print(self.board.board)
-
     def test_get_best_move_none(self):
         """
         Test the get_best_move method when iterative_deepen returns None for current_best_move.
@@ -214,10 +181,11 @@ class TestAIPlayer(unittest.TestCase):
         # Fill the board with chips so that no winning move is available and we ensure returning None
         for _ in range(6):
             for i in range(7):
-                self.board.drop_chip(i, 1)
+                self.board.drop_chip(i, -1) # -1 is a placeholder for any chip
 
-        self.assertIsNone(self.ai_player.get_best_move(self.board, total_moves=14))
-    
+        self.assertIsNone(self.ai_player.get_best_move(
+            self.board, total_moves=42))
+
     def test_minimax_returns_0(self):
         """
         Test the minimax method when the depth is 0 and the board is full.
@@ -225,22 +193,21 @@ class TestAIPlayer(unittest.TestCase):
         # Fill the board with chips so that no winning move is available and we ensure returning 0
         for _ in range(6):
             for i in range(7):
-                self.board.drop_chip(i, -1) # -1 is a placeholder for any chip
+                self.board.drop_chip(i, -1)  # -1 is a placeholder for any chip
 
-        self.assertEqual(self.ai_player.minimax(self.board, 0, -np.inf, np.inf, True, 42), 0)
-    
+        self.assertEqual(self.ai_player.minimax(
+            self.board, 0, -np.inf, np.inf, True, 42), 0)
+
     def test_evaluate_window_count_ai_four_chips(self):
         """
         Test the evaluate_window method when the window contains 4 AI chips.
         """
         window = [2, 2, 2, 2]
         self.assertEqual(self.ai_player.evaluate_window(window), 1000)
-    
+
     def test_evaluate_window_count_opponent_four_chips(self):
         """
         Test the evaluate_window method when the window contains 4 opponent chips.
         """
         window = [1, 1, 1, 1]
         self.assertEqual(self.ai_player.evaluate_window(window), -1000)
-        
-        

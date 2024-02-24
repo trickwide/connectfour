@@ -164,6 +164,18 @@ class AIPlayer(Player):
         return score
 
     def generate_cache_key(self, board, depth, is_maximizing):
+        """
+        Generate a unique key for the current game state to
+
+        Args:
+            board (Board): An instance of the game board representing the current game state.
+            depth (int): The depth of the search tree, indicating how many moves ahead to consider.
+            is_maximizing (bool): A boolean indicating whether the current node is a maximizing or minimizing node.
+
+        Returns:
+            tuple: A tuple containing the board state, depth, and a boolean indicating whether the current node is a maximizing node.
+
+        """
         board_state = tuple(tuple(row) for row in board.board)
         return (board_state, depth, is_maximizing)
 
