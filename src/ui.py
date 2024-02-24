@@ -39,11 +39,10 @@ def draw_text(window, text, color, x, y, game_font):
     window.blit(text_surface, (x, y))
 
 
-def draw_board(window, board, show_message=None, message_color=WHITE, game_font=None,\
-    current_column=None, current_player=None):
+def draw_board(window, board, show_message=None, message_color=WHITE, game_font=None,
+               current_column=None, current_player=None):
     """
     Draw the game board on the window.
-
     Args:
         window (pygame.Surface): The window to draw the game board on.
         board (Board): The game board to draw.
@@ -56,7 +55,7 @@ def draw_board(window, board, show_message=None, message_color=WHITE, game_font=
     CHIP_RADIUS = GRID_SIZE // 2 - 5
     window.fill(BLACK)  # Clear the window first
 
-    if current_column is not None and current_player is not None:
+    if current_column is not None and current_player is not None and show_message is None:
         pygame.draw.circle(window, RED if current_player.get_id() == 1 else YELLOW,
                            (current_column * 100 + 50, 50), 45)
 
@@ -72,9 +71,11 @@ def draw_board(window, board, show_message=None, message_color=WHITE, game_font=
             elif board.board[row][col] == 2:
                 pygame.draw.circle(window, YELLOW, (col * GRID_SIZE + GRID_SIZE //
                                    2, (row + 1) * GRID_SIZE + GRID_SIZE // 2), CHIP_RADIUS)
+
     if show_message:
         draw_text(window, show_message, message_color,
                   window.get_width() // 4, window.get_height() // 12, game_font)
+
     pygame.display.update()  # Update the display to show the changes
 
 
