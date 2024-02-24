@@ -21,7 +21,19 @@ Testien suorittamisessa menee ~3,6 sekuntia.
 
 Sovelluksen tämän hetkisen testikattavuuden näet yllä olevaa badgea klikkaamalla.
 
+#### Suorituskykytestaus
+
+Pelille ei ole toteutettu erillistä suorituskykytestausta. Iteratiivisen syvenemisen aloitussyvyys **5** valittiin hyödyntämällä manuaalista testausta ja seuraamalla kuinka kauan tekoälyllä kesti siirron tekemisessä. Jotta peli on suhteellisen responsiivinen tekoälyllä on ~3 sekuntia aikaa löytää paras siirtonsa.
+
+### Asennus
+
+Peliä on pääosin kehityetty Windows-ympäristössä, mutta pelin toiminta on varmistettu myös Linux-ympäristössä.
+
 ## Manuaalinen testaus
 
 Manuaalinen testaus on tapahtunut `print()` -komentojen tulosteiden avulla sovelluksen kehityksen eri vaiheissa, jotta funktioiden toimintaa on pystytty seuraamaan.
 Tämän lisäksi itse peliä on pelattu eri tavoilla, jotta on nähty millä tapaa tekoälyvastustaja toimii ja onko siinä korjattavaa. Manuaalisesti pelaamalla on myös nähty miten itse sovelluksen graafinen käyttöliittymä toimii ja mitä korjauksia on tehtävä.
+
+## Toiminnallisuudet ja sovellukseen jääneet laatuongelmat
+
+Erilaisia lautatilanteita voisi simuloida enemmän testeissä, lisäksi tekoälyvastustaja on vielä suhteellisen "tyhmä" ja ei aina huomaa omia voittavia siirtoja. Lisää ongelmakohtia nostettu [toteutusdokumentissa](toteutusdokumentti.md).
