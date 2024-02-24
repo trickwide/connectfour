@@ -5,6 +5,7 @@ Connect Four  AI Player Module
 import numpy as np
 from player import Player
 import time
+from functools import lru_cache
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
@@ -198,6 +199,7 @@ class AIPlayer(Player):
             return -3000
         return node
 
+    @lru_cache(maxsize=1000)
     def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
