@@ -5,7 +5,8 @@ Connect Four  AI Player Module
 import numpy as np
 from player import Player
 import time
-from functools import lru_cache
+from collections import OrderedDict
+
 
 ROW_COUNT = 6
 COLUMN_COUNT = 7
@@ -21,7 +22,8 @@ class AIPlayer(Player):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cache = {}
+        self.cache = OrderedDict()
+        self.cache_max_size = 5000
 
     def get_best_move(self, board, total_moves):
         """
@@ -37,16 +39,17 @@ class AIPlayer(Player):
         best_move = None
         depth = 5  # Initial depth for iterative deepening search
         time_start = time.time()
-        time_limit = 3  # seconds
+        time_limit = 10  # seconds
         safety_margin = 0.5  # seconds, allows function call overhead
 
         while time.time() - time_start < time_limit - safety_margin:
-            current_best_move, _ = self.iterative_deepen(
+            current_best_move = self.iterative_deepen(
                 board, depth, total_moves, time_start, time_limit-safety_margin)
             if current_best_move is not None:
                 best_move = current_best_move
             depth += 1
 
+        print(f"AI Player: Best move is {best_move},  reached depth {depth-1}")
         return best_move
 
     def iterative_deepen(self, board, depth, total_moves, time_start, time_limit):
@@ -74,24 +77,26 @@ class AIPlayer(Player):
         best_move = None
 
         for column in valid_moves:
-            if time.time() - time_start > time_limit:
-                break  # Stop searching if time limit exceeded
             alpha = float("-inf")
             beta = float("inf")
+            if time.time() - time_start > time_limit:
+                break  # Stop searching if time limit exceeded
+            
             row = board.get_next_empty_row(column)
-            board_copy = board.copy()
-            board_copy.drop_chip(column, 2)
+            board.drop_chip(column, 2)
             total_moves += 1
-            score = self.minimax(
-                board_copy, depth-1, alpha, beta, False, total_moves)
-            board_copy.board[row][column] = 0  # Undo move
+            
+            score, _ = self.minimax(
+                board, depth-1, alpha, beta, False, total_moves)
 
             if score > best_score:
                 best_score = score
                 best_move = column
-                self.cache[column] = score
-
-        return best_move, best_score
+            
+            board.board[row][column] = 0 # Undo move
+            total_moves -= 1
+            
+        return best_move
 
     def evaluate_window(self, window):
         """
@@ -105,16 +110,16 @@ class AIPlayer(Player):
             Positive scores favor the player, while negative scores indicate disadvantage.
         """
         score = 0
-
+        
         if window.count(2) == 4:
-            score += 1000
+            score += 10000
         if window.count(2) == 3 and window.count(0) == 1:
             score += 100
         if window.count(2) == 2 and window.count(0) == 2:
             score += 10
 
         if window.count(1) == 4:
-            score -= 1000
+            score -= 10000
         if window.count(1) == 3 and window.count(0) == 1:
             score -= 100
         if window.count(1) == 2 and window.count(0) == 2:
@@ -164,7 +169,7 @@ class AIPlayer(Player):
 
         return score
 
-    def generate_cache_key(self, board, depth, is_maximizing):
+    def generate_cache_key(self, board, depth, is_maximizing, total_moves):
         """
         Generate a unique key for the current game state to
 
@@ -178,7 +183,8 @@ class AIPlayer(Player):
 
         """
         board_state = tuple(tuple(row) for row in board.board)
-        return (board_state, depth, is_maximizing)
+        current_turn = 2 if is_maximizing else 1
+        return (board_state, depth, current_turn, total_moves)
 
     def check_if_terminal_node(self, board):
         """
@@ -194,12 +200,27 @@ class AIPlayer(Player):
         node = False
 
         if board.is_winner(2):
-            return 3000
+            return 10000
         if board.is_winner(1):
-            return -3000
+            return -10000
         return node
+    
+    def get_cache_value(self, key):
+        
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key) # Mark key as recently used
+        return self.cache[key]
+    
+    def set_cache_value(self, key, value):
+        if key in self.cache:
+            # Move key to the end to mark it as recently used
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.cache_max_size:
+            print(f"Evicting cache item: {self.cache.popitem(last=False)}")
+            self.cache.popitem(last=False) # Remove the least recently used item
 
-    @lru_cache(maxsize=1000)
     def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
@@ -214,52 +235,63 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
-        cache_key = self.generate_cache_key(board, depth, is_maximizing)
+        cache_key = self.generate_cache_key(board, depth, is_maximizing, total_moves)
 
-        if cache_key in self.cache:
-            return self.cache[cache_key]
+        cached_value = self.get_cache_value(cache_key)
+        if cached_value is not None:
+            cached_score, cached_best_move, cached_depth = cached_value
+            if cached_depth >= depth:
+                return cached_score, cached_best_move
 
         terminal_node = self.check_if_terminal_node(board)
 
         if depth == 0 or terminal_node:
             if terminal_node:  # If the game is won, return the terminal node value
-                return terminal_node
+                return terminal_node, None
             elif total_moves == 42:  # 42 is the maximum number of moves in Connect Four, so the game is a draw
                 return 0
             else:  # If the depth is 0, return the heuristic value of the board
-                return self.heuristic_value(board)
+                return self.heuristic_value(board), None
 
         valid_moves = [column for column in range(
             COLUMN_COUNT) if board.is_valid_location(column)]
 
         if is_maximizing:
             value = float("-inf")
+            best_move = None
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
                 board_copy = board.copy()
                 board_copy.drop_chip(column, 2)
-                new_value = self.minimax(
+                new_value, _ = self.minimax(
                     board_copy, depth-1, alpha, beta, False, total_moves)
                 board_copy.board[row][column] = 0  # Undo move
                 total_moves -= 1
-                value = max(value, new_value)
+                if new_value > value:
+                    value = new_value
+                    best_move = column
                 alpha = max(alpha, value)
                 if value >= beta:
                     break
+            self.set_cache_value(cache_key, (value, best_move, depth))
+            return value, best_move
         else:
             value = float("inf")
+            best_move = None
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
                 board_copy = board.copy()
                 board_copy.drop_chip(column, 1)
                 total_moves += 1
-                new_value = self.minimax(
+                new_value, _ = self.minimax(
                     board_copy, depth-1, alpha, beta, True, total_moves)
                 board_copy.board[row][column] = 0  # Undo move
                 total_moves -= 1
-                value = min(value, new_value)
+                if new_value < value:
+                    value = new_value
+                    best_move = column
                 beta = min(beta, value)
                 if value <= alpha:
                     break
-        self.cache[cache_key] = value
-        return value
+            self.set_cache_value(cache_key, (value, best_move, depth))
+            return value, best_move
