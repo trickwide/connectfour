@@ -25,7 +25,7 @@ class Board:
         Returns:
             array: A 2D array representing the Connect Four board.
         """
-        board = np.zeros((self.row_count, self.column_count))
+        board = np.zeros((self.row_count, self.column_count), dtype=int)
         return board
 
     def copy(self):
