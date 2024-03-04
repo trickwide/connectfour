@@ -38,14 +38,16 @@ class AIPlayer(Player):
         overall_best_score = float("-inf")
         depth = 5  # Initial depth for iterative deepening search
         time_start = time.time()
-        time_limit = 10  # seconds
+        time_limit = 5  # seconds
         safety_margin = 0.5  # seconds, allows function call overhead
         center_columns = [3, 2, 4, 1, 5, 0, 6]
+        
+        # Adjust max depth based on the number of empty cells  on the board
+        max_depth = ROW_COUNT * COLUMN_COUNT - total_moves
 
-        while time.time() - time_start < time_limit - safety_margin:
-            # alpha, beta yms alustukset syvyys silmukassa
+        while time.time() - time_start < time_limit - safety_margin and depth <= max_depth:
             valid_moves = [
-                col for col in center_columns if board.is_valid_location(col)] #vain ekalla iteraatiolla
+                col for col in center_columns if board.is_valid_location(col)] # Initialize valid moves only on first iteration
             
             best_move = None
             best_score = alpha = float("-inf")
@@ -63,18 +65,16 @@ class AIPlayer(Player):
                 if score > best_score:
                     best_score = score
                     best_move = column
-                    print(f"Best move: {best_move}, Best score: {best_score}")
-                valid_moves.remove(column)
-                valid_moves.insert(0, column)
+                    valid_moves.remove(column)
+                    valid_moves.insert(0, column)
             
                 board.board[row][column] = 0  # Undo move
                 total_moves -= 1
             if best_score > overall_best_score:
                 overall_best_score = best_score
                 overall_best_move = best_move
-            print("New depth reached:", depth)
-            depth += 1
 
+            depth += 1 # Increment depth for next iteration, if time allows
         return overall_best_move
 
     def evaluate_window(self, window):
@@ -202,13 +202,7 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
-        # We can't use heuristic values from previous iterations, the most important thing is the win (we can't return the value directly, because it has different values at different depths)
-        
-        # Sometimes on same iteration we get the same situation from two different paths
-        
         cache_key = self.generate_cache_key(board, depth, is_maximizing)
-        
-        # cache should have the move, not the value. Move column is the most important, if there is a value in the cache it should be moved to the front of the list
 
         terminal_node = self.check_if_terminal_node(board)
 
@@ -219,16 +213,18 @@ class AIPlayer(Player):
                 return None, 0
             else:  # If the depth is 0, return the heuristic value of the board
                 return None, self.heuristic_value(board)
-            
+        
+        # Prioritize center columns
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [column for column in
             center_columns if board.is_valid_location(column)]
-        # If this game state has been calculated once, the best move is raised to the top of the list and the loop starts from there
-        # Dictionary must be made move by move
-        # if cache is hit put the best move to the front of the list
+
+        # If cache is hit put the best move to the front of the list
         if cache_key in self.cache:
-            valid_moves.remove(self.cache[cache_key][1])
-            valid_moves.insert(0, self.cache[cache_key][1])
+            best_cached_move = self.cache[cache_key][0]
+            if best_cached_move in valid_moves:
+                valid_moves.remove(best_cached_move)
+                valid_moves.insert(0, best_cached_move)
         
         if is_maximizing:
             best_move = None
@@ -244,10 +240,11 @@ class AIPlayer(Player):
                 if float(new_value)  > value:
                     value = new_value
                     best_move = column
-                    self.cache[cache_key] = (value, best_move)
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
+            # Save value and best move to the cache
+            self.cache[cache_key] = (value, best_move)
             return best_move, value
         else:
             best_move = None
@@ -264,8 +261,9 @@ class AIPlayer(Player):
                 if float(new_value) < value:
                     value = new_value
                     best_move = column
-                    self.cache[cache_key] = (value, best_move)
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
+            # Save value and best move to the cache
+            self.cache[cache_key] = (value, best_move)
             return best_move, value
