@@ -141,7 +141,7 @@ class TestBoard(unittest.TestCase):
         for i in range(3):
             board.board[3 - i][i] = 1
         self.assertFalse(board.is_winner(1))
-    
+
     def test_is_not_winner(self):
         """
         Test the is_winner method with no winner.
@@ -149,16 +149,15 @@ class TestBoard(unittest.TestCase):
         board = Board()
         self.assertFalse(board.is_winner(1))
         self.assertFalse(board.is_winner(2))
-        
+
     def test_no_winner_full_board(self):
         """
         Test the is_winner method with a full board and no winner.
         """
         board = Board()
         for c in range(board.column_count):
-            for r in range(board.row_count):
-                board.drop_chip(c, -1) # -1 is a placeholder that doesn't result in win
+            for _ in range(board.row_count):
+                # -1 is a placeholder that doesn't result in win
+                board.drop_chip(c, -1)
         self.assertFalse(board.is_winner(1))
         self.assertFalse(board.is_winner(2))
-
-        

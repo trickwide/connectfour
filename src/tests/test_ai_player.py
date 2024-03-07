@@ -5,8 +5,8 @@ Test module for the AIPlayer class.
 import unittest
 from unittest.mock import patch
 from itertools import chain, repeat
-import numpy as np
 import time
+import numpy as np
 from src.ai_player import AIPlayer, ROW_COUNT, COLUMN_COUNT
 
 
@@ -16,8 +16,8 @@ class MockBoard:
     """
 
     def __init__(self):
-        self.row_count = 6
-        self.column_count = 7
+        self.row_count = ROW_COUNT
+        self.column_count = COLUMN_COUNT
         self.board = np.zeros((ROW_COUNT, COLUMN_COUNT), dtype=int)
 
     def is_valid_location(self, column):
@@ -42,10 +42,8 @@ class MockBoard:
         row = self.get_next_empty_row(column)
         if row is not None:
             self.board[row][column] = chip
-            self.last_move = (row, column)
             return (row, column)
-        else:
-            return None
+        return None
 
     def is_winner(self, player_id):
         """
@@ -181,30 +179,32 @@ class TestAIPlayer(unittest.TestCase):
         """
         Test the get_best_move method when iterative_deepen returns None for current_best_move.
         """
-        # Fill the board with chips so that no winning move is available and we ensure returning None
+        # Fill the board with chips so that no winning move is available and return NOne
         for _ in range(6):
             for i in range(7):
-                self.board.drop_chip(i, -1) # -1 is a placeholder for any chip
+                self.board.drop_chip(i, -1)  # -1 is a placeholder for any chip
 
         self.assertIsNone(self.ai_player.get_best_move(
             self.board, total_moves=42))
-        
+
     def test_get_best_move_time_limit(self):
         """
         Test that get_best_move breaks the search loop when the time limit is exceeded.
         """
-        
+
         total_moves = 0
-        
-        with patch('time.time', side_effect=chain([0,1,2,3,4,5], repeat(6))):
+
+        with patch('time.time', side_effect=chain([0, 1, 2, 3, 4, 5], repeat(6))):
             start_time = time.time()
             best_move = self.ai_player.get_best_move(self.board, total_moves)
             end_time = time.time()
-            
-            self.assertTrue(end_time - start_time <= 6, "The search should break when the time limit is exceeded. Accomodate for some overhead.")
-            
-            self.assertIsNotNone(best_move, "The best move should be returned even if the time limit is exceeded.")
-        
+
+            self.assertTrue(end_time - start_time <= 6,
+                            "The search should break when the time limit is exceeded. \
+                                Accomodate for some overhead.")
+
+            self.assertIsNotNone(
+                best_move, "The best move should be returned even if the time limit is exceeded.")
 
     def test_minimax_returns_tuple_of_None_and_0(self):
         """
@@ -231,106 +231,114 @@ class TestAIPlayer(unittest.TestCase):
         """
         window = [1, 1, 1, 1]
         self.assertEqual(self.ai_player.evaluate_window(window), -1000)
-    
+
     def test_evaluate_window_count_ai_three_chips(self):
         """
         Test the evaluate_window method when the window contains 3 AI chips.
         """
         window = [2, 2, 2, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), 100)
-    
+
     def test_evaluate_window_count_opponent_three_chips(self):
         """
         Test the evaluate_window method when the window contains 3 opponent chips.
         """
         window = [1, 1, 1, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), -100)
-        
+
     def test_evaluate_window_count_ai_two_chips(self):
         """
         Test the evaluate_window method when the window contains 2 AI chips.
         """
         window = [2, 2, 0, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), 10)
-        
+
     def test_evaluate_window_count_opponent_two_chips(self):
         """
         Test the evaluate_window method when the window contains 2 opponent chips.
         """
         window = [1, 1, 0, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), -10)
-    
+
     def test_evaluate_window_count_no_chips(self):
         """
         Test the evaluate_window method when the window contains no chips.
         """
         window = [0, 0, 0, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), 0)
-        
+
     def test_evaluate_window_mixed_chips(self):
         """
         Test the evaluate_window method when the window contains a mix of AI and opponent chips.
         """
         window = [2, 1, 2, 0]
         self.assertEqual(self.ai_player.evaluate_window(window), 0)
-        
+
     def test_heuristic_evaluation_multiple_winning_scenarios(self):
         """
         Test the heuristic_evaluation method when multiple winning scenarios are present.
         """
         for c in range(self.board.column_count):
-            for r in range(self.board.row_count - 1):  # Leave the top row empty for simplicity
+            # Leave the top row empty for simplicity
+            for r in range(self.board.row_count - 1):
                 if c % 2 == 0:
                     self.board.board[r][c] = 2  # AI's chip
                 else:
                     self.board.board[r][c] = 1  # Opponent's chip
-        
-        self.board.board[2][self.board.column_count - 1] = 0  # Clear spot for AI
-        self.board.board[3][self.board.column_count - 1] = 0  # Clear spot for opponent
-        
+
+        # Clear spot for AI
+        self.board.board[2][self.board.column_count - 1] = 0
+        # Clear spot for opponent
+        self.board.board[3][self.board.column_count - 1] = 0
+
         ai_heuristic_value = self.ai_player.heuristic_value(self.board)
-        
-        self.assertGreater(ai_heuristic_value, 0, "AI should have a positive heuristic value")
-        
+
+        self.assertGreater(ai_heuristic_value, 0,
+                           "AI should have a positive heuristic value")
+
     def test_heuristic_threat_creation(self):
         """
         Test the heuristic method when the AI creates a threat.
         """
         # Set up a scenario where AI has two non-contiguous three-in-a-row opportunities
-        self.board.board[5][2] = self.board.board[5][3] = self.board.board[5][4] = 2  # First threat
-        self.board.board[5][0] = self.board.board[4][1] = self.board.board[3][2] = 2  # Second threat setup
-        
+        # First threat
+        self.board.board[5][2] = self.board.board[5][3] = self.board.board[5][4] = 2
+        # Second threat setup
+        self.board.board[5][0] = self.board.board[4][1] = self.board.board[3][2] = 2
+
         # Evaluate heuristic value
         heuristic_value_before = self.ai_player.heuristic_value(self.board)
-        
+
         # Make a move that creates the second threat
         self.board.drop_chip(2, 2)  # Assuming this creates the second threat
-        
+
         # Evaluate heuristic value after creating the threat
         heuristic_value_after = self.ai_player.heuristic_value(self.board)
-        
+
         # The heuristic value should increase after creating multiple threats
-        self.assertGreater(heuristic_value_after, heuristic_value_before, "Heuristic should value creating multiple winning threats positively.")
-        
+        self.assertGreater(heuristic_value_after, heuristic_value_before,
+                           "Heuristic should value creating multiple winning threats positively.")
+
     def test_heuristic_opponent_threat_avoidance(self):
         """
         Test the heuristic method when the AI avoids an opponent's threat.
         """
-        # Set up a scenario where the opponent has two chips in a row and the AI can block the winning move
+        # Opponent has two chips in a row and the AI can block the winning move
         self.board.board[5][2] = self.board.board[5][3] = 1
-        
+
         # Evaluate heuristic value
         heuristic_value_before = self.ai_player.heuristic_value(self.board)
-        
+
         # Make a move that blocks the opponent's winning move
         self.board.drop_chip(4, 2)
-        
+
         # Evaluate heuristic value after blocking the opponent's winning move
         heuristic_value_after = self.ai_player.heuristic_value(self.board)
-        
+
         # The heuristic value should increase after blocking the opponent's winning move
-        self.assertGreater(heuristic_value_after, heuristic_value_before, "Heuristic should value blocking opponent's winning moves positively.")
-        
+        self.assertGreater(heuristic_value_after, heuristic_value_before,
+                           "Heuristic should value blocking opponent's winning moves positively.")
+
     def test_get_cached_move_when_cache_empty(self):
         """
         Test the get_cached_move method when the cache is empty.
@@ -343,25 +351,28 @@ class TestAIPlayer(unittest.TestCase):
         """
         self.ai_player.cache[0] = 3
         self.assertEqual(self.ai_player.get_cached_move(0), 3)
-        
+
     def test_terminal_node_ai_win(self):
         """
         Test the terminal_node method when the AI wins.
         """
-        self.board.board[0][0:4] = 2 # AI wins
-        
-        self.assertEqual(self.ai_player.check_if_terminal_node(self.board), 3000, "Should return 3000 for an AI win")
+        self.board.board[0][0:4] = 2  # AI wins
+
+        self.assertEqual(self.ai_player.check_if_terminal_node(
+            self.board), 3000, "Should return 3000 for an AI win")
 
     def test_terminal_node_opponent_win(self):
         """
         Test the terminal_node method when the opponent wins.
         """
-        self.board.board[0][0:4] = 1 # Opponent wins
-        
-        self.assertEqual(self.ai_player.check_if_terminal_node(self.board), -3000, "Should return -3000 for an opponent win")
+        self.board.board[0][0:4] = 1  # Opponent wins
+
+        self.assertEqual(self.ai_player.check_if_terminal_node(
+            self.board), -3000, "Should return -3000 for an opponent win")
 
     def test_non_terminal_node(self):
         """
         Test the terminal_node method when the game is not over.
         """
-        self.assertFalse(self.ai_player.check_if_terminal_node(self.board), "Should return False for a non-terminal node")
+        self.assertFalse(self.ai_player.check_if_terminal_node(
+            self.board), "Should return False for a non-terminal node")

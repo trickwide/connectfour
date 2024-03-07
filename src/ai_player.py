@@ -2,9 +2,8 @@
 Connect Four  AI Player Module
 """
 
-import numpy as np
-from player import Player
 import time
+from player import Player
 
 
 ROW_COUNT = 6
@@ -22,7 +21,7 @@ class AIPlayer(Player):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cache = {}
-        
+
     def get_best_move(self, board, total_moves):
         """
         Determine the best move to make for the AI player on the given game board.
@@ -41,18 +40,19 @@ class AIPlayer(Player):
         time_limit = 5  # seconds
         safety_margin = 0.5  # seconds, allows function call overhead
         center_columns = [3, 2, 4, 1, 5, 0, 6]
-        
+
         # Adjust max depth based on the number of empty cells  on the board
         max_depth = ROW_COUNT * COLUMN_COUNT - total_moves
 
         while time.time() - time_start < time_limit - safety_margin and depth <= max_depth:
+            # Initialize valid moves only on first iteration
             valid_moves = [
-                col for col in center_columns if board.is_valid_location(col)] # Initialize valid moves only on first iteration
-            
+                col for col in center_columns if board.is_valid_location(col)]
+
             best_move = None
             best_score = alpha = float("-inf")
             beta = float("inf")
-            
+
             for column in valid_moves:
                 if time.time() - time_start > time_limit:
                     break  # Stop searching if time limit exceeded
@@ -67,14 +67,14 @@ class AIPlayer(Player):
                     best_move = column
                     valid_moves.remove(column)
                     valid_moves.insert(0, column)
-            
+
                 board.board[row][column] = 0  # Undo move
                 total_moves -= 1
             if best_score > overall_best_score:
                 overall_best_score = best_score
                 overall_best_move = best_move
 
-            depth += 1 # Increment depth for next iteration, if time allows
+            depth += 1  # Increment depth for next iteration, if time allows
         return overall_best_move
 
     def evaluate_window(self, window):
@@ -154,19 +154,28 @@ class AIPlayer(Player):
 
         Args:
             board (Board): An instance of the game board representing the current game state.
-            depth (int): The depth of the search tree, indicating how many moves ahead to consider.
-            is_maximizing (bool): A boolean indicating whether the current node is a maximizing or minimizing node.
+            depth (int): The depth of the search tree. How many moves ahead to consider.
+            is_maximizing (bool): A boolean indicating if the node is maximizing or minimizing.
 
         Returns:
-            tuple: A tuple containing the board state, depth, and a boolean indicating whether the current node is a maximizing node.
-
+            tuple: A tuple containing the board state, depth, and a boolean.
         """
         board_state = tuple(tuple(row) for row in board.board)
         cache_key = (board_state, depth, is_maximizing)
-        
+
         return cache_key
-            
+
     def get_cached_move(self, cache_key):
+        """
+        Get the cached value for a given game state.
+
+        Args:
+            cache_key (tuple): A tuple containing the board state, depth, and a boolean.
+
+        Returns:
+            int: The best move for the given game state, if it is cached.
+            Otherwise, None.
+        """
         return self.cache.get(cache_key, None)
 
     def check_if_terminal_node(self, board):
@@ -175,10 +184,11 @@ class AIPlayer(Player):
 
         Args:
             board (Board): An instance of the game board representing the current game state.
-            depth (int): The depth of the search tree, indicating how many moves ahead to consider.
+            depth (int): The depth of the search tree. How many moves ahead to consider.
 
         Returns:
-            int: The value of the terminal node, if the game is won by either player. Otherwise, False.
+            int: The value of the terminal node, if the game is won by either player.
+            Otherwise, False.
         """
         node = False
 
@@ -209,15 +219,15 @@ class AIPlayer(Player):
         if depth == 0 or terminal_node:
             if terminal_node:  # If the game is won, return the terminal node value
                 return None, terminal_node
-            elif total_moves == 42:  # 42 is the maximum number of moves in Connect Four, so the game is a draw
+            if total_moves == 42:  # 42 is the maximum number of moves, game is a draw
                 return None, 0
-            else:  # If the depth is 0, return the heuristic value of the board
-                return None, self.heuristic_value(board)
-        
+            # If the depth is 0, return the heuristic value of the board
+            return None, self.heuristic_value(board)
+
         # Prioritize center columns
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [column for column in
-            center_columns if board.is_valid_location(column)]
+                       center_columns if board.is_valid_location(column)]
 
         # If cache is hit put the best move to the front of the list
         if cache_key in self.cache:
@@ -225,7 +235,7 @@ class AIPlayer(Player):
             if best_cached_move in valid_moves:
                 valid_moves.remove(best_cached_move)
                 valid_moves.insert(0, best_cached_move)
-        
+
         if is_maximizing:
             best_move = None
             value = float("-inf")
@@ -237,33 +247,32 @@ class AIPlayer(Player):
                     board_copy, depth-1, alpha, beta, False, total_moves)[1]
                 board_copy.board[row][column] = 0  # Undo move
                 total_moves -= 1
-                if float(new_value)  > value:
+                if float(new_value) > value:
                     value = new_value
                     best_move = column
+                    # Save value and best move to the cache
+                    self.cache[cache_key] = (value, best_move)
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
-            # Save value and best move to the cache
-            self.cache[cache_key] = (value, best_move)
             return best_move, value
-        else:
-            best_move = None
-            value = float("inf")
-            for column in valid_moves:
-                row = board.get_next_empty_row(column)
-                board_copy = board.copy()
-                board_copy.drop_chip(column, 1)
-                total_moves += 1
-                new_value = self.minimax(
-                    board_copy, depth-1, alpha, beta, True, total_moves)[1]
-                board_copy.board[row][column] = 0  # Undo move
-                total_moves -= 1
-                if float(new_value) < value:
-                    value = new_value
-                    best_move = column
-                beta = min(beta, value)
-                if alpha >= beta:
-                    break
-            # Save value and best move to the cache
-            self.cache[cache_key] = (value, best_move)
-            return best_move, value
+        best_move = None
+        value = float("inf")
+        for column in valid_moves:
+            row = board.get_next_empty_row(column)
+            board_copy = board.copy()
+            board_copy.drop_chip(column, 1)
+            total_moves += 1
+            new_value = self.minimax(
+                board_copy, depth-1, alpha, beta, True, total_moves)[1]
+            board_copy.board[row][column] = 0  # Undo move
+            total_moves -= 1
+            if float(new_value) < value:
+                value = new_value
+                best_move = column
+                # Save value and best move to the cache
+                self.cache[cache_key] = (value, best_move)
+            beta = min(beta, value)
+            if alpha >= beta:
+                break
+        return best_move, value

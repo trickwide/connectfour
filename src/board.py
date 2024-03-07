@@ -54,10 +54,9 @@ class Board:
         row = self.get_next_empty_row(column)
         if row is not None:  # Check if a valid row was found
             self.board[row][column] = chip
-            self.last_move = (row, column)  # Update the last move
             return (row, column)
-        else:
-            return None
+
+        return None
 
     def is_valid_location(self, column):
         """
@@ -88,28 +87,45 @@ class Board:
         return None
 
     def is_winner(self, player_id):
+        """
+        Check if a player has won the game.
+
+        Args:
+            player_id (int): The player's chip (1 for red, 2 for yellow)
+
+        Returns:
+            boolean: True if the player has won, False otherwise.
+        """
         # Check valid horizontal locations for win
         for c in range(self.column_count - 3):
             for r in range(self.row_count):
-                if self.board[r][c] == player_id and self.board[r][c + 1] == player_id and self.board[r][c + 2] == player_id and self.board[r][c + 3] == player_id:
+                if self.board[r][c] == player_id and self.board[r][c + 1] == player_id \
+                    and self.board[r][c + 2] == player_id \
+                        and self.board[r][c + 3] == player_id:
                     return True
 
         # Check valid vertical locations for win
         for c in range(self.column_count):
             for r in range(self.row_count - 3):
-                if self.board[r][c] == player_id and self.board[r + 1][c] == player_id and self.board[r + 2][c] == player_id and self.board[r + 3][c] == player_id:
+                if self.board[r][c] == player_id and self.board[r + 1][c] == player_id \
+                    and self.board[r + 2][c] == player_id \
+                        and self.board[r + 3][c] == player_id:
                     return True
 
         # Check valid positive diagonal locations for win
         for c in range(self.column_count - 3):
             for r in range(self.row_count - 3):
-                if self.board[r][c] == player_id and self.board[r + 1][c + 1] == player_id and self.board[r + 2][c + 2] == player_id and self.board[r + 3][c + 3] == player_id:
+                if self.board[r][c] == player_id and self.board[r + 1][c + 1] == player_id \
+                    and self.board[r + 2][c + 2] == player_id \
+                        and self.board[r + 3][c + 3] == player_id:
                     return True
 
         # check valid negative diagonal locations for win
         for c in range(self.column_count - 3):
             for r in range(3, self.row_count):
-                if self.board[r][c] == player_id and self.board[r - 1][c + 1] == player_id and self.board[r - 2][c + 2] == player_id and self.board[r - 3][c + 3] == player_id:
+                if self.board[r][c] == player_id and self.board[r - 1][c + 1] == player_id \
+                    and self.board[r - 2][c + 2] == player_id \
+                        and self.board[r - 3][c + 3] == player_id:
                     return True
 
         return False
