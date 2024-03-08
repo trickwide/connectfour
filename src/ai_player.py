@@ -43,15 +43,14 @@ class AIPlayer(Player):
 
         # Adjust max depth based on the number of empty cells  on the board
         max_depth = ROW_COUNT * COLUMN_COUNT - total_moves
+        valid_moves = [col for col in center_columns if board.is_valid_location(col)]
 
+        beta = float("inf")
         while time.time() - time_start < time_limit - safety_margin and depth <= max_depth:
             # Initialize valid moves only on first iteration
-            valid_moves = [
-                col for col in center_columns if board.is_valid_location(col)]
 
             best_move = None
             best_score = alpha = float("-inf")
-            beta = float("inf")
 
             for column in valid_moves:
                 if time.time() - time_start > time_limit:
@@ -73,7 +72,8 @@ class AIPlayer(Player):
             if best_score > overall_best_score:
                 overall_best_score = best_score
                 overall_best_move = best_move
-
+            print(f"Depth: {depth}")
+            #jos voittava score break tässä
             depth += 1  # Increment depth for next iteration, if time allows
         return overall_best_move
 
