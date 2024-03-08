@@ -20,7 +20,7 @@ class AIPlayer(Player):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cache = {}
+        self.cache = {} # pitäis siirtää get best move tai luoda uudelleen ennen
 
     def get_best_move(self, board, total_moves):
         """
@@ -203,7 +203,6 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
-        cache_key = self.generate_cache_key(board, depth, is_maximizing)
 
         terminal_node = self.check_if_terminal_node(board)
 
@@ -215,6 +214,7 @@ class AIPlayer(Player):
             # If the depth is 0, return the heuristic value of the board
             return None, self.heuristic_value(board)
 
+        cache_key = self.generate_cache_key(board, depth, is_maximizing)
         # Prioritize center columns
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [column for column in
