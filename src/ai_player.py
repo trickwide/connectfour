@@ -221,11 +221,11 @@ class AIPlayer(Player):
                        center_columns if board.is_valid_location(column)]
 
         # If cache is hit put the best move to the front of the list
+        # dictionarysta get -> none jos ei löydy
         if cache_key in self.cache:
             best_cached_move = self.cache[cache_key][0]
-            if best_cached_move in valid_moves:
-                valid_moves.remove(best_cached_move)
-                valid_moves.insert(0, best_cached_move)
+            valid_moves.remove(best_cached_move)
+            valid_moves.insert(0, best_cached_move)
 
         if is_maximizing:
             best_move = None
