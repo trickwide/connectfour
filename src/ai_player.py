@@ -235,9 +235,8 @@ class AIPlayer(Player):
                 board_copy = board.copy()
                 board_copy.drop_chip(column, 2)
                 new_value = self.minimax(
-                    board_copy, depth-1, alpha, beta, False, total_moves)[1]
+                    board_copy, depth-1, alpha, beta, False, total_moves+1)[1]
                 board_copy.board[row][column] = 0  # Undo move
-                total_moves -= 1
                 if float(new_value) > value:
                     value = new_value
                     best_move = column
@@ -255,9 +254,8 @@ class AIPlayer(Player):
             board_copy.drop_chip(column, 1)
             total_moves += 1
             new_value = self.minimax(
-                board_copy, depth-1, alpha, beta, True, total_moves)[1]
+                board_copy, depth-1, alpha, beta, True, total_moves+1)[1]
             board_copy.board[row][column] = 0  # Undo move
-            total_moves -= 1
             if float(new_value) < value:
                 value = new_value
                 best_move = column
