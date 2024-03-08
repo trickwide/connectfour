@@ -33,8 +33,7 @@ class AIPlayer(Player):
         Returns:
             int: The column number representing the best move for the AI player to make.
         """
-        overall_best_move = None
-        overall_best_score = float("-inf")
+        best_move = None
         depth = 5  # Initial depth for iterative deepening search
         time_start = time.time()
         time_limit = 5  # seconds
@@ -49,17 +48,13 @@ class AIPlayer(Player):
         while time.time() - time_start < time_limit - safety_margin and depth <= max_depth:
             # Initialize valid moves only on first iteration
 
-            best_move = None
             best_score = alpha = float("-inf")
 
             for column in valid_moves:
-                if time.time() - time_start > time_limit:
-                    break  # Stop searching if time limit exceeded
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, 2)
-                total_moves += 1
                 score = self.minimax(
-                    board, depth-1, alpha, beta, False, total_moves)[1]
+                    board, depth-1, alpha, beta, False, total_moves+1)[1]
                 # Alpha value needs to be updated here as it is the best current score
                 if score > best_score:
                     best_score = score
@@ -68,14 +63,10 @@ class AIPlayer(Player):
                     valid_moves.insert(0, column)
 
                 board.board[row][column] = 0  # Undo move
-                total_moves -= 1
-            if best_score > overall_best_score:
-                overall_best_score = best_score
-                overall_best_move = best_move
             print(f"Depth: {depth}")
             #jos voittava score break tässä
             depth += 1  # Increment depth for next iteration, if time allows
-        return overall_best_move
+        return best_move
 
     def evaluate_window(self, window):
         """
