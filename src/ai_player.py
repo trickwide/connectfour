@@ -222,8 +222,8 @@ class AIPlayer(Player):
 
         # If cache is hit put the best move to the front of the list
         # dictionarysta get -> none jos ei löydy
-        if cache_key in self.cache:
-            best_cached_move = self.cache[cache_key][0]
+        best_cached_move = self.cache.get(cache_key, None)
+        if best_cached_move is not None:
             valid_moves.remove(best_cached_move)
             valid_moves.insert(0, best_cached_move)
 
@@ -241,10 +241,11 @@ class AIPlayer(Player):
                     value = new_value
                     best_move = column
                     # Save value and best move to the cache
-                    self.cache[cache_key] = (value, best_move)
+                
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
+            self.cache[cache_key] = best_move
             return best_move, value
         best_move = None
         value = float("inf")
@@ -259,9 +260,8 @@ class AIPlayer(Player):
             if float(new_value) < value:
                 value = new_value
                 best_move = column
-                # Save value and best move to the cache
-                self.cache[cache_key] = (value, best_move)
             beta = min(beta, value)
             if alpha >= beta:
                 break
+        self.cache[cache_key] = best_move
         return best_move, value
