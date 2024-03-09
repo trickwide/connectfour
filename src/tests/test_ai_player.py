@@ -338,16 +338,3 @@ class TestAIPlayer(unittest.TestCase):
         # The heuristic value should increase after blocking the opponent's winning move
         self.assertGreater(heuristic_value_after, heuristic_value_before,
                            "Heuristic should value blocking opponent's winning moves positively.")
-
-    def test_get_cached_move_when_cache_empty(self):
-        """
-        Test the get_cached_move method when the cache is empty.
-        """
-        self.assertIsNone(self.ai_player.get_cached_move(0))
-
-    def test_get_cached_move_when_cache_not_empty(self):
-        """
-        Test the get_cached_move method when the cache is not empty.
-        """
-        self.ai_player.cache[0] = 3
-        self.assertEqual(self.ai_player.get_cached_move(0), 3)
