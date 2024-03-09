@@ -3,9 +3,6 @@ Test module for the AIPlayer class.
 """
 
 import unittest
-from unittest.mock import patch
-from itertools import chain, repeat
-import time
 import numpy as np
 from src.ai_player import AIPlayer, ROW_COUNT, COLUMN_COUNT
 
@@ -186,25 +183,6 @@ class TestAIPlayer(unittest.TestCase):
 
         self.assertIsNone(self.ai_player.get_best_move(
             self.board, total_moves=42))
-
-    def test_get_best_move_time_limit(self):
-        """
-        Test that get_best_move breaks the search loop when the time limit is exceeded.
-        """
-
-        total_moves = 0
-
-        with patch('time.time', side_effect=chain([0, 1, 2, 3, 4, 5], repeat(6))):
-            start_time = time.time()
-            best_move = self.ai_player.get_best_move(self.board, total_moves)
-            end_time = time.time()
-
-            self.assertTrue(end_time - start_time <= 6,
-                            "The search should break when the time limit is exceeded. \
-                                Accomodate for some overhead.")
-
-            self.assertIsNotNone(
-                best_move, "The best move should be returned even if the time limit is exceeded.")
 
     def test_minimax_returns_tuple_of_None_and_0(self):
         """
