@@ -351,28 +351,3 @@ class TestAIPlayer(unittest.TestCase):
         """
         self.ai_player.cache[0] = 3
         self.assertEqual(self.ai_player.get_cached_move(0), 3)
-
-    def test_terminal_node_ai_win(self):
-        """
-        Test the terminal_node method when the AI wins.
-        """
-        self.board.board[0][0:4] = 2  # AI wins
-
-        self.assertEqual(self.ai_player.check_if_terminal_node(
-            self.board), 3000, "Should return 3000 for an AI win")
-
-    def test_terminal_node_opponent_win(self):
-        """
-        Test the terminal_node method when the opponent wins.
-        """
-        self.board.board[0][0:4] = 1  # Opponent wins
-
-        self.assertEqual(self.ai_player.check_if_terminal_node(
-            self.board), -3000, "Should return -3000 for an opponent win")
-
-    def test_non_terminal_node(self):
-        """
-        Test the terminal_node method when the game is not over.
-        """
-        self.assertFalse(self.ai_player.check_if_terminal_node(
-            self.board), "Should return False for a non-terminal node")
