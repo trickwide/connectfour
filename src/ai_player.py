@@ -153,19 +153,6 @@ class AIPlayer(Player):
 
         return cache_key
 
-    def get_cached_move(self, cache_key):
-        """
-        Get the cached value for a given game state.
-
-        Args:
-            cache_key (tuple): A tuple containing the board state, depth, and a boolean.
-
-        Returns:
-            int: The best move for the given game state, if it is cached.
-            Otherwise, None.
-        """
-        return self.cache.get(cache_key, None)
-
     def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
