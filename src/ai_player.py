@@ -166,26 +166,6 @@ class AIPlayer(Player):
         """
         return self.cache.get(cache_key, None)
 
-    def check_if_terminal_node(self, board):
-        """
-        Check if the current game state is a terminal node (i.e., a win for either player).
-
-        Args:
-            board (Board): An instance of the game board representing the current game state.
-            depth (int): The depth of the search tree. How many moves ahead to consider.
-
-        Returns:
-            int: The value of the terminal node, if the game is won by either player.
-            Otherwise, False.
-        """
-        node = False
-
-        if board.is_winner(2):
-            return 3000
-        if board.is_winner(1):
-            return -3000
-        return node
-
     def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
