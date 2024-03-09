@@ -20,7 +20,7 @@ class AIPlayer(Player):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cache = {} # pitäis siirtää get best move tai luoda uudelleen ennen
+        self.cache = {}
 
     def get_best_move(self, board, total_moves):
         """
@@ -36,8 +36,7 @@ class AIPlayer(Player):
         best_move = None
         depth = 5  # Initial depth for iterative deepening search
         time_start = time.time()
-        time_limit = 5  # seconds
-        safety_margin = 0.5  # seconds, allows function call overhead
+        time_limit = 5.5  # seconds
         center_columns = [3, 2, 4, 1, 5, 0, 6]
 
         # Adjust max depth based on the number of empty cells  on the board
@@ -45,11 +44,9 @@ class AIPlayer(Player):
         valid_moves = [col for col in center_columns if board.is_valid_location(col)]
 
         beta = float("inf")
-        while time.time() - time_start < time_limit - safety_margin and depth <= max_depth:
-            # Initialize valid moves only on first iteration
+        while time.time() - time_start < time_limit and depth <= max_depth:
 
             best_score = alpha = float("-inf")
-
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
                 board.drop_chip(column, 2)
@@ -59,12 +56,12 @@ class AIPlayer(Player):
                 if score > best_score:
                     best_score = score
                     best_move = column
-                    valid_moves.remove(column)
-                    valid_moves.insert(0, column)
 
                 board.board[row][column] = 0  # Undo move
             print(f"Depth: {depth}")
-            #jos voittava score break tässä
+            # If winning move is found, return it immediately and break the loop
+            valid_moves.remove(best_move)
+            valid_moves.insert(0, best_move)
             depth += 1  # Increment depth for next iteration, if time allows
         return best_move
 
@@ -203,25 +200,24 @@ class AIPlayer(Player):
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
+        if is_maximizing:
+            if board.is_winner(1):
+                return None, -3000
+        else:
+            if board.is_winner(2):
+                return None, 3000
 
-        terminal_node = self.check_if_terminal_node(board)
+        if total_moves == 42:
+            return None, 0
 
-        if depth == 0 or terminal_node:
-            if terminal_node:  # If the game is won, return the terminal node value
-                return None, terminal_node
-            if total_moves == 42:  # 42 is the maximum number of moves, game is a draw
-                return None, 0
-            # If the depth is 0, return the heuristic value of the board
+        if depth == 0:
             return None, self.heuristic_value(board)
 
         cache_key = self.generate_cache_key(board, depth, is_maximizing)
-        # Prioritize center columns
-        center_columns = [3, 2, 4, 1, 5, 0, 6]
-        valid_moves = [column for column in
-                       center_columns if board.is_valid_location(column)]
 
-        # If cache is hit put the best move to the front of the list
-        # dictionarysta get -> none jos ei löydy
+        center_columns = [3, 2, 4, 1, 5, 0, 6]
+        valid_moves = [column for column in center_columns if board.is_valid_location(column)]
+
         best_cached_move = self.cache.get(cache_key, None)
         if best_cached_move is not None:
             valid_moves.remove(best_cached_move)
@@ -240,8 +236,6 @@ class AIPlayer(Player):
                 if float(new_value) > value:
                     value = new_value
                     best_move = column
-                    # Save value and best move to the cache
-                
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
@@ -265,3 +259,5 @@ class AIPlayer(Player):
                 break
         self.cache[cache_key] = best_move
         return best_move, value
+# Minimax should return last move as parameter, give it to win check
+# check chips while coordinates are in bounds
