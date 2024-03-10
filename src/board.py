@@ -86,46 +86,52 @@ class Board:
 
         return None
 
-    def is_winner(self, player_id):
+    def is_winner(self, last_row, last_col, player_id):
         """
-        Check if a player has won the game.
+        Check if a player has won the game starting from the last dropped chip.
 
         Args:
-            player_id (int): The player's chip (1 for red, 2 for yellow)
+            last_row (int): The row index of the last dropped chip.
+            last_col (int): The column index of the last dropped chip.
+            player_id (int): The player's chip (1 for red, 2 for yellow).
 
         Returns:
             boolean: True if the player has won, False otherwise.
         """
-        # Check valid horizontal locations for win
-        for c in range(self.column_count - 3):
-            for r in range(self.row_count):
-                if self.board[r][c] == player_id and self.board[r][c + 1] == player_id \
-                    and self.board[r][c + 2] == player_id \
-                        and self.board[r][c + 3] == player_id:
-                    return True
+        def check_direction(row_step, col_step):
+            count = 1  # Starts with 1 to count the last dropped chip itself.
+            # Check in the primary direction (forward)
+            row, col = last_row + row_step, last_col + col_step
+            while 0 <= row < self.row_count and 0 <= col < self.column_count \
+                and self.board[row][col] == player_id:
+                count += 1
+                row += row_step
+                col += col_step
 
-        # Check valid vertical locations for win
-        for c in range(self.column_count):
-            for r in range(self.row_count - 3):
-                if self.board[r][c] == player_id and self.board[r + 1][c] == player_id \
-                    and self.board[r + 2][c] == player_id \
-                        and self.board[r + 3][c] == player_id:
-                    return True
+            # Check in the opposite direction (backward)
+            row, col = last_row - row_step, last_col - col_step
+            while 0 <= row < self.row_count and 0 <= col < self.column_count \
+                and self.board[row][col] == player_id:
+                count += 1
+                row -= row_step
+                col -= col_step
 
-        # Check valid positive diagonal locations for win
-        for c in range(self.column_count - 3):
-            for r in range(self.row_count - 3):
-                if self.board[r][c] == player_id and self.board[r + 1][c + 1] == player_id \
-                    and self.board[r + 2][c + 2] == player_id \
-                        and self.board[r + 3][c + 3] == player_id:
-                    return True
+            return count > 3
 
-        # check valid negative diagonal locations for win
-        for c in range(self.column_count - 3):
-            for r in range(3, self.row_count):
-                if self.board[r][c] == player_id and self.board[r - 1][c + 1] == player_id \
-                    and self.board[r - 2][c + 2] == player_id \
-                        and self.board[r - 3][c + 3] == player_id:
-                    return True
+        # Check horizontally
+        if check_direction(0, 1):
+            return True
+
+        # Check vertically
+        if check_direction(1, 0):
+            return True
+
+        # Check diagonally (positive slope)
+        if check_direction(1, 1):
+            return True
+
+        # Check diagonally (negative slope)
+        if check_direction(-1, 1):
+            return True
 
         return False
