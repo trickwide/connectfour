@@ -85,11 +85,12 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN and current_player == player1 and not game_over:
             column_clicked = event.pos[0] // 100
             if board.is_valid_location(column_clicked):
-                board.drop_chip(column_clicked, player1.get_id())
+                last_row, last_col = board.drop_chip(
+                    column_clicked, player1.get_id())
                 draw_board(window, board, game_over_message if game_over else None,
                            message_color, game_font, current_column, current_player)
                 total_moves += 1
-                if board.is_winner(player1.get_id()):
+                if board.is_winner(last_row, last_col, player1.get_id()):
                     game_over_message = "Player 1 (Red) wins!"
                     message_color = RED
                     game_over = True
@@ -104,10 +105,11 @@ while running:
                                      1, current_column + 1)
             elif event.key == pygame.K_SPACE and current_player == player1 and not game_over:
                 if board.is_valid_location(current_column):
-                    board.drop_chip(current_column, player1.get_id())
+                    last_row, last_col = board.drop_chip(
+                        current_column, player1.get_id())
                     draw_board(window, board, game_over_message if game_over else None,
                                message_color, game_font, current_column, current_player)
-                    if board.is_winner(player1.get_id()):
+                    if board.is_winner(last_row, last_col, player1.get_id()):
                         game_over_message = "Player 1 (Red) wins!"
                         message_color = RED
                         game_over = True
@@ -126,8 +128,8 @@ while running:
         best_move = player2.get_best_move(board, total_moves)
         total_moves += 1
         if best_move is not None:
-            board.drop_chip(best_move, player2.get_id())
-            if board.is_winner(player2.get_id()):
+            last_row, last_col = board.drop_chip(best_move, player2.get_id())
+            if board.is_winner(last_row, last_col, player2.get_id()):
                 game_over_message = "Player 2 (AI - Yellow) wins!"
                 message_color = YELLOW
                 game_over = True
