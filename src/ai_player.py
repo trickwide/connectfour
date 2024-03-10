@@ -6,10 +6,6 @@ import time
 from player import Player
 
 
-ROW_COUNT = 6
-COLUMN_COUNT = 7
-
-
 class AIPlayer(Player):
     """
     Represents an AI player in the Connect Four game.
@@ -33,15 +29,17 @@ class AIPlayer(Player):
         Returns:
             int: The column number representing the best move for the AI player to make.
         """
+        self.cache = {}  # Clear cache for each new move
         best_move = None
         depth = 5  # Initial depth for iterative deepening search
         time_start = time.time()
-        time_limit = 5.5  # seconds
+        time_limit = 3  # seconds
         center_columns = [3, 2, 4, 1, 5, 0, 6]
 
         # Adjust max depth based on the number of empty cells  on the board
-        max_depth = ROW_COUNT * COLUMN_COUNT - total_moves
-        valid_moves = [col for col in center_columns if board.is_valid_location(col)]
+        max_depth = board.row_count * board.column_count - total_moves
+        valid_moves = [
+            col for col in center_columns if board.is_valid_location(col)]
 
         beta = float("inf")
         while time.time() - time_start < time_limit and depth <= max_depth:
@@ -49,20 +47,22 @@ class AIPlayer(Player):
             best_score = alpha = float("-inf")
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
-                board.drop_chip(column, 2)
+                last_row, last_col = board.drop_chip(column, 2)
+                # If winning move is found, return it immediately
+                if board.is_winner(last_row, last_col, 2):
+                    board.board[row][column] = 0 # Undo move
+                    return column
                 score = self.minimax(
-                    board, depth-1, alpha, beta, False, total_moves+1)[1]
-                # Alpha value needs to be updated here as it is the best current score
+                    board, depth-1, alpha, beta, False, total_moves+1, last_row, last_col)[1]
+                # Update alpha value as it is the best_score for the maximizing player
                 if score > best_score:
                     best_score = score
                     best_move = column
 
                 board.board[row][column] = 0  # Undo move
-            print(f"Depth: {depth}")
-            # If winning move is found, return it immediately and break the loop
+            depth += 1  # Increment depth for next iteration, if time allows
             valid_moves.remove(best_move)
             valid_moves.insert(0, best_move)
-            depth += 1  # Increment depth for next iteration, if time allows
         return best_move
 
     def evaluate_window(self, window):
@@ -109,28 +109,28 @@ class AIPlayer(Player):
         score = 0
 
         # Check horizontal
-        for row in range(ROW_COUNT):
+        for row in range(board.row_count):
             row_array = [int(i) for i in list(board.board[row, :])]
-            for col in range(COLUMN_COUNT-3):
+            for col in range(board.column_count-3):
                 window = row_array[col:col+4]
                 score += self.evaluate_window(window)
 
         # Check vertical
-        for col in range(COLUMN_COUNT):
+        for col in range(board.column_count):
             col_array = [int(i) for i in list(board.board[:, col])]
-            for row in range(ROW_COUNT-3):
+            for row in range(board.row_count-3):
                 window = col_array[row:row+4]
                 score += self.evaluate_window(window)
 
         # Check positive slope diagonals
-        for row in range(ROW_COUNT-3):
-            for col in range(COLUMN_COUNT-3):
+        for row in range(board.row_count-3):
+            for col in range(board.column_count-3):
                 window = [board.board[row+i][col+i] for i in range(4)]
                 score += self.evaluate_window(window)
 
         # Check negative slope diagonals
-        for row in range(ROW_COUNT-3):
-            for col in range(COLUMN_COUNT-3):
+        for row in range(board.row_count-3):
+            for col in range(board.column_count-3):
                 window = [board.board[row+3-i][col+i] for i in range(4)]
                 score += self.evaluate_window(window)
 
@@ -153,7 +153,7 @@ class AIPlayer(Player):
 
         return cache_key
 
-    def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves):
+    def minimax(self, board, depth, alpha, beta, is_maximizing, total_moves, last_row, last_col):
         """
         Minimax algorithm with alpha-beta pruning to determine the best move for the AI player.
 
@@ -163,15 +163,17 @@ class AIPlayer(Player):
             alpha (float): Represents the minimum score that the maximizing player is assured of.
             beta (float): Represents maximum score that the minimizing player is assured of.
             player_id (int): The ID of the player who is making the current move.
+            last_row (int): The row index of the last dropped chip.
+            last_col (int): The column index of the last dropped chip.
 
         Returns:
             int: The minimax evaluation score indicating the desirability of the current game state.
         """
         if is_maximizing:
-            if board.is_winner(1):
+            if board.is_winner(last_row, last_col, 1):
                 return None, -3000
         else:
-            if board.is_winner(2):
+            if board.is_winner(last_row, last_col, 2):
                 return None, 3000
 
         if total_moves == 42:
@@ -183,7 +185,8 @@ class AIPlayer(Player):
         cache_key = self.generate_cache_key(board, depth, is_maximizing)
 
         center_columns = [3, 2, 4, 1, 5, 0, 6]
-        valid_moves = [column for column in center_columns if board.is_valid_location(column)]
+        valid_moves = [
+            column for column in center_columns if board.is_valid_location(column)]
 
         best_cached_move = self.cache.get(cache_key, None)
         if best_cached_move is not None:
@@ -196,9 +199,9 @@ class AIPlayer(Player):
             for column in valid_moves:
                 row = board.get_next_empty_row(column)
                 board_copy = board.copy()
-                board_copy.drop_chip(column, 2)
+                last_row, last_col = board_copy.drop_chip(column, 2)
                 new_value = self.minimax(
-                    board_copy, depth-1, alpha, beta, False, total_moves+1)[1]
+                    board_copy, depth-1, alpha, beta, False, total_moves+1, last_row, last_col)[1]
                 board_copy.board[row][column] = 0  # Undo move
                 if float(new_value) > value:
                     value = new_value
@@ -213,10 +216,10 @@ class AIPlayer(Player):
         for column in valid_moves:
             row = board.get_next_empty_row(column)
             board_copy = board.copy()
-            board_copy.drop_chip(column, 1)
+            last_row, last_col = board_copy.drop_chip(column, 1)
             total_moves += 1
             new_value = self.minimax(
-                board_copy, depth-1, alpha, beta, True, total_moves+1)[1]
+                board_copy, depth-1, alpha, beta, True, total_moves+1, last_row, last_col)[1]
             board_copy.board[row][column] = 0  # Undo move
             if float(new_value) < value:
                 value = new_value
@@ -226,5 +229,3 @@ class AIPlayer(Player):
                 break
         self.cache[cache_key] = best_move
         return best_move, value
-# Minimax should return last move as parameter, give it to win check
-# check chips while coordinates are in bounds
