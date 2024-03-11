@@ -31,7 +31,7 @@ class AIPlayer(Player):
         """
         self.cache = {}  # Clear cache for each new move
         best_move = None
-        depth = 5  # Initial depth for iterative deepening search
+        depth = 3  # Initial depth for iterative deepening search
         time_start = time.time()
         time_limit = 3  # seconds
         center_columns = [3, 2, 4, 1, 5, 0, 6]
@@ -182,8 +182,8 @@ class AIPlayer(Player):
         if depth == 0:
             return None, self.heuristic_value(board)
 
-        cache_key = self.generate_cache_key(board, depth, is_maximizing)
 
+        cache_key = self.generate_cache_key(board, depth, is_maximizing)
         center_columns = [3, 2, 4, 1, 5, 0, 6]
         valid_moves = [
             column for column in center_columns if board.is_valid_location(column)]
