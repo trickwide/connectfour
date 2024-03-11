@@ -243,3 +243,63 @@ class TestAIPlayer(unittest.TestCase):
         # The heuristic value should increase after blocking the opponent's winning move
         self.assertGreater(heuristic_value_after, heuristic_value_before,
                            "Heuristic should value blocking opponent's winning moves positively.")
+
+    def test_five_moves_away_from_a_win(self):
+        """
+        Test the AI's decision making when it is five moves away from a win.
+        Example used:
+        https://www.youtube.com/watch?v=WoaIMK5160w&list=PLu0rC09yug3YbL_eR6vCK7NAH4bj2VEfZ&index=5
+        """
+
+        # Set chips for red (human) player
+        self.board.board[5][1] = self.board.board[5][3] = self.board.board[5][5] = 1
+        self.board.board[5][6] = self.board.board[4][6] = self.board.board[2][4] = 1
+
+        # Set chips for yellow (AI) player
+        self.board.board[4][1] = self.board.board[4][3] = self.board.board[4][4] = 2
+        self.board.board[4][5] = self.board.board[5][4] = self.board.board[3][4] = 2
+
+        # We should get_best_move for AI in this case, and the move should be column 3
+        best_move = self.ai_player.get_best_move(self.board, 10)
+        self.assertEqual(best_move, 3, "AI should prefer column 3 in this case")
+        # Update the board to reflect the AI's move
+        self.board.drop_chip(3, 2)
+
+        # Opponent's move to column 6
+        self.board.board[3][6] = 1
+
+        # AI makes a blocking move in column 6, preventing the opponent from winning
+        best_move = self.ai_player.get_best_move(self.board, 12)
+        self.assertEqual(best_move, 6, "AI should prefer column 6 in this case")
+        # Update the board to reflect the AI's move
+        self.board.drop_chip(6, 2)
+
+        # Opponent's move to column 4
+        self.board.board[1][4] = 1
+
+        # AI has two ways towards win, column 1 or 5.
+        best_move = self.ai_player.get_best_move(self.board, 14)
+        self.assertEqual(best_move, 1, "AI should prefer column 1 in this case")
+         # Update the board to reflect the AI's move
+        self.board.drop_chip(1, 2)
+
+        # Opponent's move to column 0
+        self.board.board[5][0] = 1
+
+        print(self.board.board)
+
+        # AI should block by dropping to column 2
+        best_move = self.ai_player.get_best_move(self.board, 16)
+        self.assertEqual(best_move, 2, "AI should prefer column 2 in this case")
+        # Update the board to reflect the AI's move
+        self.board.drop_chip(2, 2)
+
+        # Opponent's move to column 2
+        self.board.board[4][2] = 1
+
+        # AI should win by dropping to column 2
+        best_move = self.ai_player.get_best_move(self.board, 18)
+        self.assertEqual(best_move, 2, "AI should prefer column 2 in this case")
+        # Check that it is an actual winning move
+        self.assertTrue(self.board.is_winner(3, 2, 2), \
+            "AI should win the game by dropping chip to column 2")
