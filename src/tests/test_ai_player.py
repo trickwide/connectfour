@@ -286,8 +286,6 @@ class TestAIPlayer(unittest.TestCase):
         # Opponent's move to column 0
         self.board.board[5][0] = 1
 
-        print(self.board.board)
-
         # AI should block by dropping to column 2
         best_move = self.ai_player.get_best_move(self.board, 16)
         self.assertEqual(best_move, 2, "AI should prefer column 2 in this case")
